@@ -1,7 +1,7 @@
 #include "animation.h"
 #include <math.h>
 
-void Animation::update()
+void Animation::update(float dt)
 {
-	currentAngle = fmod(currentAngle + angle, 360);
+	currentAngle = fmod(currentAngle + angle * dt, 360);
 }

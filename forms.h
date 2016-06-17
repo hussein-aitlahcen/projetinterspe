@@ -32,70 +32,47 @@ const Color GREEN(0.0f, 1.0f, 0.0f);
 const Color YELLOW(1.0f, 1.0f, 0.0f);
 const Color WHITE(1.0f, 1.0f, 1.0f);
 
-const int MAX_FORM_CHILDS = 20;
-
+class Drawable
+{
+public:
+	virtual void render() = 0;
+	virtual void update(float dt) = 0;
+};
 
 // Generic class to render and animate an object
-class Form
+template<typename T>
+class Form : public Drawable
 {
 protected:
 	Point position;
 	Color col;
+	float alpha;
 	Animation anim;
-	Form* childs[MAX_FORM_CHILDS];
-private:
-	int nextChildIndex()
-	{
-		for (int i = 0; i < MAX_FORM_CHILDS; i++)
-		{
-			if (childs[i] == NULL)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
+	vector<T*> childs;
 public:
-	Form()
+	Form() 
 	{
-		for (int i = 0; i < MAX_FORM_CHILDS; i++)
-		{
-			childs[i] = NULL;
-		}
+		alpha = 1;
 	}
 	Animation& getAnim() { return anim; }
 	void setAnim(Animation ani) { anim = ani; }
-	void addChild(Form* child)
+	void addChild(T* child)
 	{
-		int childIndex = nextChildIndex();
-		if (childIndex == -1)
-			return;
-		childs[childIndex] = child;
+		childs.push_back(child);
 	}
-	void removeChild(Form* child)
+	void removeChild(T* child)
 	{
-		unsigned int i;
-		for (i = 0; i < MAX_FORM_CHILDS; i++)
-		{
-			if (childs[i] == child)
-			{
-				childs[i] = NULL;
-			}
-		}
+		childs.erase(child);
 	}
-	void update()
+	void update(float dt)
 	{
 		// Mise à jour de l'animation
-		anim.update();
+		anim.update(dt);
 
 		// Mise à jour des enfants, récursivement
-		unsigned short i;
-		for (i = 0; i < MAX_FORM_CHILDS; i++)
+		for (auto element : childs) 
 		{
-			if (childs[i] != NULL)
-			{
-				childs[i]->update();
-			}
+			element->update(dt);
 		}
 	}
 	void render()
@@ -103,7 +80,7 @@ public:
 		glPushMatrix();
 
 		// Couleur de la forme
-		glColor3f(col.r, col.g, col.b);
+		glColor4f(col.r, col.g, col.b, alpha);
 
 		// Déplacement sur position
 		glTranslated(position.x, position.y, position.z);
@@ -115,22 +92,21 @@ public:
 		renderSpecific();
 
 		// On trace les enfants, recursivement
-		unsigned short i;
-		for (i = 0; i < MAX_FORM_CHILDS; i++)
+		for (auto child : childs)
 		{
-			if (childs[i] != NULL)
-			{
-				childs[i]->render();
-			}
+			child->render();
 		}
+		
 		glPopMatrix();
 	}
 	virtual void renderSpecific() = 0;
 };
 
+class BasicForm : public Form<BasicForm> { };
+
 
 // A particular Form
-class Sphere : public Form
+class Sphere : public BasicForm
 {
 private:
 	double radius;
@@ -139,7 +115,7 @@ public:
 	void renderSpecific();
 };
 
-class Cube : public Form
+class Cube : public BasicForm
 {
 private:
 	double width;
@@ -150,8 +126,7 @@ public:
 	void renderSpecific(); 
 };
 
-
-class Skybox3D : public Form
+class Skybox3D : public BasicForm
 {
 private:
 	vector<const GLchar*> faces;
@@ -213,7 +188,7 @@ public:
 };
 
 
-class Model3D : public Form
+class Model3D : public BasicForm
 {
 private:
 	Model* model;
@@ -222,17 +197,20 @@ public:
 	void renderSpecific();
 };
 
-class Pale : public Model3D
+class Pales : public Model3D
 {
 public:
-	Pale(Point pos = Point(), Color cl = WHITE);
+	Pales(Point pos = Point(), Color cl = WHITE);
 	void updateSpeed(double windSpeed, double attackAngle);
 };
 
 class Eolienne : public Model3D
 {
+private:
+	Pales* pales;
 public:
 	Eolienne(Point pos = Point(), Color cl = WHITE);
+	Pales* getPales() { return pales; }
 };
 
 class Skybox : public Skybox3D

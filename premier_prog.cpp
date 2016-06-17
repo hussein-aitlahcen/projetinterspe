@@ -8,7 +8,7 @@
 #include "geometry.h"
 // Module for generating and rendering forms
 #include "forms.h"
-
+#include "particle_system.h"
 
 using namespace std;
 
@@ -34,12 +34,10 @@ bool init(SDL_Window** window, SDL_GLContext* context);
 bool initGL();
 
 // Updating forms for animation
-void update(Form* formlist[MAX_FORMS_NUMBER]);
+void update(Drawable* formlist[MAX_FORMS_NUMBER]);
 
 // Renders scene to the screen
-const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos);
-
-void addForm(Form* form);
+const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos);
 
 // Frees media and shuts down SDL
 void close(SDL_Window** window);
@@ -135,14 +133,25 @@ bool initGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Initialize clear color : black with no transparency
-	glClearColor(0, 0.35, 1, 1);
+	// Fog color
+	glClearColor(0, 0, 0, 1);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
+	glEnable(GL_FOG);
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	GLfloat fogcolor[4] = { 0.5, 0.5, 0.5, 1 };
+	GLint fogmode = GL_EXP;
+	glFogi(GL_FOG_MODE, fogmode);
+	glFogfv(GL_FOG_COLOR, fogcolor);
+	glFogf(GL_FOG_DENSITY, 0.10);
+	glFogf(GL_FOG_START, 1.0);
+	glFogf(GL_FOG_END, 5.0);
 
 	float lightSpecularColor[] = { 0.8, 0.8, 0.8 };
 	float lightDiffuseColor[] = { 1, 1, 1 };
@@ -169,13 +178,13 @@ bool initGL()
 	return success;
 }
 
-void update(Form* formlist[MAX_FORMS_NUMBER])
+void update(Drawable* formlist[MAX_FORMS_NUMBER])
 {
 	// Update the list of forms
 	unsigned short i = 0;
 	while (formlist[i] != NULL)
 	{
-		formlist[i]->update();
+		formlist[i]->update(ANIM_DELAY / 1000.0);
 		i++;
 	}
 }
@@ -208,7 +217,7 @@ void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 
 }
 
-const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target)
+const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target)
 {
 	// Clear color buffer and Z-Buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -297,30 +306,33 @@ int wmain(int argc, char* args[])
 		SDL_Event event;
 
 		// Camera position
-		Point camera_position(0, 0.0, 5.0);
+		Point camera_position(0, 0, 5);
         Point camera_target(0,0,0);
 
+		float initialWindSpeed = 10;
+		WindSystem* windSystem = new WindSystem(initialWindSpeed, Point(-8, 15, 0), WHITE);
+		Eolienne* eolienne = new Eolienne(Point(4, 0, 0));
+		eolienne->getPales()->updateSpeed(initialWindSpeed, M_PI / 2);
+
 		// The forms to render
-		Form* forms_list[MAX_FORMS_NUMBER];
-		unsigned short number_of_forms = 0, i;
-		forms_list[number_of_forms] = NULL; // Do nothing but remove a warning
+		Drawable* forms_list[MAX_FORMS_NUMBER];
+		unsigned short i;
 		for (i = 0; i < MAX_FORMS_NUMBER; i++)
 		{
 			forms_list[i] = NULL;
 		}
 
-		Form* test = new Skybox(Point(1, 0, 0));
-		forms_list[0] = test;
-
-		Form* a = new Eolienne(Point(4, 0, 0));
-		Form* b = new Eolienne(Point(-4, 0, 0));
-		forms_list[1] = a;
-		forms_list[2] = b;
-
+		Skybox* skybox = new Skybox(Point(1, 0, 0));
+		forms_list[0] = skybox;
 
 		number_of_forms = 0;
 		cout << "nb de formes : " << number_of_forms << endl;
 
+		forms_list[0] = skybox;
+		forms_list[1] = eolienne;
+		forms_list[2] = windSystem;
+
+		float nextWindSpeed;
 		// Get first "current time"
 		previous_time = SDL_GetTicks();
 		// While application is running
@@ -391,7 +403,16 @@ int wmain(int argc, char* args[])
 					case SDLK_ESCAPE:
 						quit = true;
 						break;
-
+					case SDLK_i:
+						nextWindSpeed = min(35.0, windSystem->getWindSpeed() * 1.5);
+						windSystem->setWindSpeed(nextWindSpeed);
+						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
+						break;
+					case SDLK_k:
+						nextWindSpeed = max(4.0, windSystem->getWindSpeed() * 0.8);
+						windSystem->setWindSpeed(nextWindSpeed);
+						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
+						break;
 					default:
 						break;
 					}

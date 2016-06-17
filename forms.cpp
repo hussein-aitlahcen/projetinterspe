@@ -216,37 +216,36 @@ void Model3D::renderSpecific()
 	glDisableClientState(GL_NORMAL_ARRAY);
 }
 
-Pale::Pale(Point pos, Color cl) : Model3D("model/Pales.json", pos, cl)
+Pales::Pales(Point pos, Color cl) : Model3D("model/Pales.json", pos, cl)
 {
-	updateSpeed(25, M_PI/12);
 }
 
 
-void Pale::updateSpeed(double windSpeed, double attackAngle)
+void Pales::updateSpeed(double windSpeed, double attackAngle)
 {
-	const int NB_PALES = 1;
-	double tanAttackAngle = tan(attackAngle);
-	if (tanAttackAngle > 0)
+	if (attackAngle > 0)
 	{
-		const double rayonPale = 15;
-		const double contrainteMeca = 15; // m/s
+		const double rayonPale = 11;
+		const double rho = 1.225;
+		const double inertiePale = 133000;
 
-		double vitesseTangentielle = 0;//windSpeed / tan(attackAngle);
-		double vitesseRotation = sqrt(pow(windSpeed, 2) + pow(vitesseTangentielle, 2));
+		double masseAirApplique = rho * M_PI * pow(rayonPale, 2) * windSpeed * sin(attackAngle);
+		double energieCinetiqueAir = masseAirApplique * pow(windSpeed, 2);
+		
 	
-		double radians = 2 * M_PI * vitesseRotation / rayonPale;
+		double radians = sqrt(energieCinetiqueAir / inertiePale);
 		double degrees = radians * 180 / M_PI;
 		double tourmin = degrees * 60 / 360;
-		printf("tanAttack=%f\nvitesseTan=%f\nvitesseRot=%f\nrad/s=%f\ndeg/s=%f\ntourmin=%f\n",
-			tanAttackAngle, vitesseTangentielle, vitesseRotation, radians, degrees, tourmin);
-		setAnim(Animation(anim.getCurrentAngle(), degrees / 100, Vector(1, 0, 0)));
+		printf("masseAirApplique = %f\nenergieCinetique = %f\n radians = %f\n tour/min = %f\n",
+			masseAirApplique, energieCinetiqueAir, radians, tourmin);
+		setAnim(Animation(anim.getCurrentAngle(), degrees, Vector(1, 0, 0)));
 	}
 }
 
 Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 {
-	Form* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
-	Pale* pales = new Pale(Point(-2.8, -0.3, 0));
+	BasicForm* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
+	pales = new Pales(Point(-2.8, -0.3, 0));
 	nacelle->addChild(pales);
 	addChild(nacelle);
 }
