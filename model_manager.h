@@ -82,20 +82,26 @@ public:
 	}
 };
 
-class ModelManager
+
+template<typename T>
+class GenericManager
 {
 private:
-	map<string, Model*> models;
+	map<string, T*> models;
 
 public:
-	Model* loadModel(string name)
+	T* loadData(string name)
 	{
 		if (models.count(name) == 0)
 		{
-			Model* model = new Model(name);
+			T* model = new T(name);
 			models[name] = model;
 			return model;
 		}
 		return models.at(name);
 	}
+};
+
+class ModelManager : public GenericManager<Model>
+{
 };

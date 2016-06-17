@@ -71,7 +71,7 @@ Model3D::Model3D(string file, Point pos, Color color)
 {
 	position = pos;
 	col = color;
-	model = singleton<ModelManager>().loadModel(file);
+	model = singleton<ModelManager>().loadData(file);
 }
 
 void Model3D::renderSpecific()
@@ -103,9 +103,12 @@ void Pale::updateSpeed(double windSpeed, double attackAngle)
 	double tanAttackAngle = tan(attackAngle);
 	if (tanAttackAngle > 0)
 	{
+		const double rayonPale = 15;
+		const double contrainteMeca = 15; // m/s
+
 		double vitesseTangentielle = 0;//windSpeed / tan(attackAngle);
 		double vitesseRotation = sqrt(pow(windSpeed, 2) + pow(vitesseTangentielle, 2));
-		double rayonPale = 25;
+	
 		double radians = 2 * M_PI * vitesseRotation / rayonPale;
 		double degrees = radians * 180 / M_PI;
 		double tourmin = degrees * 60 / 360;
