@@ -342,6 +342,9 @@ int wmain(int argc, char* args[])
 						camera_target.x = scene_translation.x;
 						camera_target.y = scene_translation.y;
 						camera_target.z = scene_translation.z;
+						scene_angle.x = 0;
+						scene_angle.y = 0;
+						scene_angle.z = 0;
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:

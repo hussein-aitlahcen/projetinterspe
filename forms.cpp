@@ -72,6 +72,7 @@ Model3D::Model3D(string file, Point pos, Color color)
 	position = pos;
 	col = color;
 	model = singleton<ModelManager>().loadModel(file);
+
 }
 
 void Model3D::renderSpecific()
