@@ -150,6 +150,69 @@ public:
 	void renderSpecific(); 
 };
 
+
+class Skybox3D : public Form
+{
+private:
+	vector<const GLchar*> faces;
+	SkyboxTextures* textures;
+	Point position;
+
+
+	GLfloat skyboxVertices[108] = {
+		// Positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f
+	};
+
+	GLuint skyboxVAO, skyboxVBO;
+
+
+public:
+	Skybox3D(Point position = Point());
+	void renderSpecific();
+};
+
+
 class Model3D : public Form
 {
 private:
@@ -171,5 +234,12 @@ class Eolienne : public Model3D
 public:
 	Eolienne(Point pos = Point(), Color cl = WHITE);
 };
+
+class Skybox : public Skybox3D
+{
+public:
+	Skybox(Point pos = Point());
+};
+
 
 #endif // FORMS_H_INCLUDED

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <GL/glew.h>
 #include "picojson.h"
+#include "SOIL\SOIL.h"
 
 using namespace std;
 
@@ -82,20 +83,123 @@ public:
 	}
 };
 
-class ModelManager
+class SkyboxTextures
 {
 private:
-	map<string, Model*> models;
+	GLuint textureID;
+	int width, height;
+	unsigned char* image;
+	int channels;
+public:
+	// +X (right)
+	// -X (left)
+	// +Y (top)
+	// -Y (bottom)
+	// +Z (front) 
+	// -Z (back)
+	SkyboxTextures(string name)
+	{
+		vector<const GLchar*> faces;
+		GLenum cube_map_target[6] = {
+			GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+			GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+			GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+		};
+
+		faces.push_back("model/right.tga");
+		faces.push_back("model/left.tga");
+		faces.push_back("model/bottom.tga");
+		faces.push_back("model/top.tga");
+		faces.push_back("model/back.tga");
+		faces.push_back("model/front.tga");
+
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+		for (GLuint i = 0; i < faces.size(); i++)
+		{
+			image = SOIL_load_image(faces[i], &width, &height, &channels, SOIL_LOAD_RGB);
+
+			glTexImage2D(cube_map_target[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+			//glTexImage2D(cube_map_target[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+			SOIL_free_image_data(image);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	}
+
+	GLuint getTextureID()
+	{
+		return textureID;
+	}
+};
+
+class Texture
+{
+private:
+	GLuint textureID;
+	int width, height;
+	unsigned char* image;
 
 public:
-	Model* loadModel(string name)
+	Texture(string filename)
+	{
+		glGenTextures(1, &textureID);
+		image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		SOIL_free_image_data(image);
+	}
+
+	GLuint getTextureID()
+	{
+		return textureID;
+	}
+
+};
+
+template<typename T>
+class GenericManager
+{
+private:
+	map<string, T*> models;
+
+public:
+	T* loadData(string name)
 	{
 		if (models.count(name) == 0)
 		{
-			Model* model = new Model(name);
+			T* model = new T(name);
 			models[name] = model;
 			return model;
 		}
 		return models.at(name);
 	}
+};
+
+class ModelManager : public GenericManager<Model>
+{
+};
+
+class TextureManager : public GenericManager<Model>
+{
+};
+
+class SkyboxManager : public GenericManager<SkyboxTextures>
+{
 };

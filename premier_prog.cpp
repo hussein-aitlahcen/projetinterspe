@@ -225,6 +225,7 @@ const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const 
 	glRotated(scene_angle.y, 0, 1, 0);
 	glRotated(scene_angle.z, 0, 0, 1);
 	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
+	formlist[0]->render();
 
 	// X, Y and Z axis
 	glPushMatrix(); // Preserve the camera viewing point for further forms
@@ -245,7 +246,7 @@ const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const 
 	glPopMatrix();
 
 	// Render the list of forms
-	unsigned short i = 0;
+	unsigned short i = 1;
 	while (formlist[i] != NULL)
 	{
 		formlist[i]->render();
@@ -308,10 +309,14 @@ int wmain(int argc, char* args[])
 			forms_list[i] = NULL;
 		}
 
+		Form* test = new Skybox(Point(1, 0, 0));
+		forms_list[0] = test;
+
 		Form* a = new Eolienne(Point(4, 0, 0));
 		Form* b = new Eolienne(Point(-4, 0, 0));
-		forms_list[0] = a;
-		forms_list[1] = b;
+		forms_list[1] = a;
+		forms_list[2] = b;
+
 
 		number_of_forms = 0;
 		cout << "nb de formes : " << number_of_forms << endl;
@@ -358,7 +363,6 @@ int wmain(int argc, char* args[])
 
 						zoomValue = event.wheel.y/200.0;
 						zoomStep = zoomValue / 100.0;
-						printf("step : %f  \n value : %f\n", zoomStep, zoomValue);
 					}
 				}
 				case SDL_KEYDOWN:
