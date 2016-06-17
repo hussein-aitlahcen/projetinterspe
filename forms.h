@@ -83,10 +83,10 @@ public:
 			}
 		}
 	}
-	void update()
+	void update(float dt)
 	{
 		// Mise à jour de l'animation
-		anim.update();
+		anim.update(dt);
 
 		// Mise à jour des enfants, récursivement
 		unsigned short i;
@@ -94,7 +94,7 @@ public:
 		{
 			if (childs[i] != NULL)
 			{
-				childs[i]->update();
+				childs[i]->update(dt);
 			}
 		}
 	}
@@ -159,17 +159,20 @@ public:
 	void renderSpecific();
 };
 
-class Pale : public Model3D
+class Pales : public Model3D
 {
 public:
-	Pale(Point pos = Point(), Color cl = WHITE);
+	Pales(Point pos = Point(), Color cl = WHITE);
 	void updateSpeed(double windSpeed, double attackAngle);
 };
 
 class Eolienne : public Model3D
 {
+private:
+	Pales* pales;
 public:
 	Eolienne(Point pos = Point(), Color cl = WHITE);
+	Pales* getPales() { return pales; }
 };
 
 #endif // FORMS_H_INCLUDED

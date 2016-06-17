@@ -22,6 +22,7 @@
     <ClCompile Include="animation.cpp" />
     <ClCompile Include="forms.cpp" />
     <ClCompile Include="geometry.cpp" />
+    <ClCompile Include="particle_system.cpp" />
     <ClCompile Include="premier_prog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -29,6 +30,7 @@
     <ClInclude Include="forms.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="model_manager.h" />
+    <ClInclude Include="particle_system.h" />
     <ClInclude Include="picojson.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

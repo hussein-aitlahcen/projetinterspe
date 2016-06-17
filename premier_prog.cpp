@@ -135,14 +135,23 @@ bool initGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Initialize clear color : black with no transparency
-	glClearColor(0, 0.35, 1, 1);
+	// Fog color
+	glClearColor(0.5, 0.5, 0.5, 1);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
+	glEnable(GL_FOG);
+
+	GLfloat fogcolor[4] = { 0.5, 0.5, 0.5, 1 };
+	GLint fogmode = GL_EXP;
+	glFogi(GL_FOG_MODE, fogmode);
+	glFogfv(GL_FOG_COLOR, fogcolor);
+	glFogf(GL_FOG_DENSITY, 0.10);
+	glFogf(GL_FOG_START, 1.0);
+	glFogf(GL_FOG_END, 5.0);
 
 	float lightSpecularColor[] = { 0.8, 0.8, 0.8 };
 	float lightDiffuseColor[] = { 1, 1, 1 };
@@ -175,7 +184,7 @@ void update(Form* formlist[MAX_FORMS_NUMBER])
 	unsigned short i = 0;
 	while (formlist[i] != NULL)
 	{
-		formlist[i]->update();
+		formlist[i]->update(ANIM_DELAY / 1000);
 		i++;
 	}
 }
@@ -296,7 +305,7 @@ int wmain(int argc, char* args[])
 		SDL_Event event;
 
 		// Camera position
-		Point camera_position(0, 0.0, 5.0);
+		Point camera_position(0, 0, 5);
         Point camera_target(0,0,0);
 
 		// The forms to render
@@ -308,10 +317,12 @@ int wmain(int argc, char* args[])
 			forms_list[i] = NULL;
 		}
 
-		Form* a = new Eolienne(Point(4, 0, 0));
-		Form* b = new Eolienne(Point(-4, 0, 0));
+		Eolienne* a = new Eolienne(Point(4, 0, 0));
+		a->getPales()->updateSpeed(7, M_PI / 2);
+		Eolienne* b = new Eolienne(Point(-4, 0, 0));
+		b->getPales()->updateSpeed(20, M_PI / 6);
 		forms_list[0] = a;
-		forms_list[1] = b;
+		//forms_list[1] = b;
 
 		number_of_forms = 0;
 		cout << "nb de formes : " << number_of_forms << endl;
