@@ -315,8 +315,7 @@ int wmain(int argc, char* args[])
 
 		// The forms to render
 		Drawable* forms_list[MAX_FORMS_NUMBER];
-		unsigned short number_of_forms = 0, i;
-		forms_list[number_of_forms] = NULL; // Do nothing but remove a warning
+		unsigned short i;
 		for (i = 0; i < MAX_FORMS_NUMBER; i++)
 		{
 			forms_list[i] = NULL;
@@ -325,9 +324,7 @@ int wmain(int argc, char* args[])
 		forms_list[0] = eolienne;
 		forms_list[1] = windSystem;
 
-		number_of_forms = 0;
-		cout << "nb de formes : " << number_of_forms << endl;
-
+		float nextWindSpeed;
 		// Get first "current time"
 		previous_time = SDL_GetTicks();
 		// While application is running
@@ -397,12 +394,14 @@ int wmain(int argc, char* args[])
 						quit = true;
 						break;
 					case SDLK_i:
-						windSystem->setWindSpeed(windSystem->getWindSpeed() * 1.5);
-						eolienne->getPales()->updateSpeed(windSystem->getWindSpeed(), M_PI / 2);
+						nextWindSpeed = min(35.0, windSystem->getWindSpeed() * 1.5);
+						windSystem->setWindSpeed(nextWindSpeed);
+						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
 						break;
 					case SDLK_k:
-						windSystem->setWindSpeed(windSystem->getWindSpeed() * 0.8);
-						eolienne->getPales()->updateSpeed(windSystem->getWindSpeed(), M_PI / 2);
+						nextWindSpeed = max(4.0, windSystem->getWindSpeed() * 0.8);
+						windSystem->setWindSpeed(nextWindSpeed);
+						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
 						break;
 					default:
 						break;

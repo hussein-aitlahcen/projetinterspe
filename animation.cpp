@@ -3,5 +3,5 @@
 
 void Animation::update(float dt)
 {
-	currentAngle = fmod(currentAngle + angle, 360);
+	currentAngle = fmod(currentAngle + angle * dt, 360);
 }

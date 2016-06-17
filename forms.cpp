@@ -113,7 +113,7 @@ void Pales::updateSpeed(double windSpeed, double attackAngle)
 		double tourmin = degrees * 60 / 360;
 		printf("masseAirApplique = %f\nenergieCinetique = %f\n radians = %f\n tour/min = %f\n",
 			masseAirApplique, energieCinetiqueAir, radians, tourmin);
-		setAnim(Animation(anim.getCurrentAngle(), degrees / 100, Vector(1, 0, 0)));
+		setAnim(Animation(anim.getCurrentAngle(), degrees, Vector(1, 0, 0)));
 	}
 }
 
