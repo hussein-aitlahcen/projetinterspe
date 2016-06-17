@@ -143,20 +143,14 @@ bool initGL()
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	float lightSpecularColor[] = { 0.8, 0.8, 0.8 };
-	float lightDiffuseColor[] = { 1, 1, 1 };
-	float lightPos[] = { 0, 0, 5 };
-	float lightSpot[] = { 0, 0, 0 };
 
+	float lightSpecularColor[] = { 1, 1, 1 };
+	float lightDiffuseColor[] = { 1, 1, 1 }; 
+	float lightAmbient[] = { 0.1, 0.1, 0.1 };
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecularColor);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuseColor);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, lightSpot);
-
-
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	glMateriali(GL_FRONT, GL_SHININESS, 128);
 
 	// Check for error
 	error = glGetError();
@@ -198,7 +192,6 @@ void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 			scene_zoom.y *= 1.05;
 			scene_zoom.z *= 1.05;
 		}
-
 
 		if (abs(*zoomValue) <= 0.01)
 		{
