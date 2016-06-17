@@ -44,6 +44,10 @@ void addForm(Form* form);
 // Frees media and shuts down SDL
 void close(SDL_Window** window);
 
+Vector scene_angle = Vector(0, 0, 0);
+Vector scene_translation = Vector(0, 0, 0);
+Vector scene_zoom = Vector(1, 1, 1);
+
 
 /***************************************************************************/
 /* Functions implementations                                               */
@@ -176,7 +180,35 @@ void update(Form* formlist[MAX_FORMS_NUMBER])
 	}
 }
 
-const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos)
+void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
+{
+	if (*zooming)
+	{
+		*zoomValue -= *zoomStep;
+
+		if (*zoomValue <= 0)
+		{
+			scene_zoom.x *= 0.95;
+			scene_zoom.y *= 0.95;
+			scene_zoom.z *= 0.95;
+		}
+		else
+		{
+			scene_zoom.x *= 1.05;
+			scene_zoom.y *= 1.05;
+			scene_zoom.z *= 1.05;
+		}
+
+
+		if (abs(*zoomValue) <= 0.01)
+		{
+			*zooming = false;
+		}
+	}
+
+}
+
+const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target)
 {
 	// Clear color buffer and Z-Buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -186,7 +218,13 @@ const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos)
 	glLoadIdentity();
 
 	// Set the camera position and parameters
-	gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, cam_target.x, cam_target.y, cam_target.z, 0.0, 1.0, 0.0);
+
+	glTranslated(scene_translation.x, scene_translation.y, scene_translation.z);
+	glRotated(scene_angle.x, 1, 0, 0);
+	glRotated(scene_angle.y, 0, 1, 0);
+	glRotated(scene_angle.z, 0, 0, 1);
+	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
 
 	// X, Y and Z axis
 	glPushMatrix(); // Preserve the camera viewing point for further forms
@@ -247,13 +285,19 @@ int wmain(int argc, char* args[])
 	{
 		// Main loop flag
 		bool quit = false;
+		bool zooming = false;
+		bool dragging = false;
+
+		float zoomStep = 0;
+		float zoomValue = 0;
 		Uint32 current_time, previous_time;
 
 		// Event handler
 		SDL_Event event;
 
 		// Camera position
-		Point camera_position(0, 0.0, 5);
+		Point camera_position(0, 0.0, 5.0);
+        Point camera_target(0,0,0);
 
 		// The forms to render
 		Form* forms_list[MAX_FORMS_NUMBER];
@@ -275,6 +319,7 @@ int wmain(int argc, char* args[])
 		// Get first "current time"
 		previous_time = SDL_GetTicks();
 		// While application is running
+		// While application is running
 		while (!quit)
 		{
 			// Handle events on queue
@@ -282,17 +327,37 @@ int wmain(int argc, char* args[])
 			{
 				int x = 0, y = 0;
 				SDL_Keycode key_pressed = event.key.keysym.sym;
-
+				float distance = sqrt(pow((camera_position.x), 2) + pow((camera_position.y), 2) + pow((camera_position.z), 2));
 				switch (event.type)
 				{
-				case SDL_MOUSEBUTTONDOWN:
-					cout << "mouse click" << endl;
-					break;
 					// User requests quit
 				case SDL_QUIT:
 					quit = true;
 					break;
+				case SDL_MOUSEBUTTONDOWN:
+					if (event.button.button == SDL_BUTTON_LEFT)
+						dragging = true;
+					else if (event.button.button == SDL_BUTTON_MIDDLE)
+					{
+						camera_target.x = scene_translation.x;
+						camera_target.y = scene_translation.y;
+						camera_target.z = scene_translation.z;
+					}
+					break;
+				case SDL_MOUSEBUTTONUP:
+					dragging = false;
+					break;
+				case SDL_MOUSEWHEEL:
+				{
+					if (!zooming)
+					{
+						zooming = true;
 
+						zoomValue = event.wheel.y/200.0;
+						zoomStep = zoomValue / 100.0;
+						printf("step : %f  \n value : %f\n", zoomStep, zoomValue);
+					}
+				}
 				case SDL_KEYDOWN:
 					// Handle key pressed with current mouse position
 					SDL_GetMouseState(&x, &y);
@@ -300,31 +365,47 @@ int wmain(int argc, char* args[])
 					switch (key_pressed)
 					{
 						// Quit the program when 'q' or Escape keys are pressed
+					case SDLK_RIGHT:
+					case SDLK_d:
+						scene_translation.x -= scene_zoom.x;
+						break;
+					case SDLK_LEFT:
 					case SDLK_q:
+						scene_translation.x += scene_zoom.x;
+						break;
+					case SDLK_UP:
+					case SDLK_z:
+						scene_translation.y -= scene_zoom.x;
+						break;
+					case SDLK_DOWN:
+					case SDLK_s:
+						scene_translation.y += scene_zoom.x;
+						break;
 					case SDLK_ESCAPE:
 						quit = true;
-						break;
-
-					case SDLK_UP:
-						camera_position.y += 1;
-						break;
-
-					case SDLK_DOWN:
-						camera_position.y -= 1;
-						break;
-
-					case SDLK_LEFT:
-						camera_position.x -= 1;
-						break;
-
-					case SDLK_RIGHT:
-						camera_position.x += 1;
 						break;
 
 					default:
 						break;
 					}
 					break;
+
+				case SDL_MOUSEMOTION:
+				{
+					if (dragging)
+					{
+						if (event.motion.xrel < 0)
+							scene_angle.y += event.motion.xrel *distance * cos(event.motion.xrel*M_PI / 180) / 20;
+						else
+							scene_angle.y += event.motion.xrel *distance * cos(event.motion.xrel*M_PI / 180) / 20;
+						if (event.motion.yrel < 0)
+							scene_angle.x += event.motion.yrel * distance * cos(event.motion.yrel*M_PI / 180) / 20;
+						else
+							scene_angle.x += event.motion.yrel * distance * cos(event.motion.yrel*M_PI / 180) / 20;
+					}
+				}
+				break;
+
 
 				default:
 					break;
@@ -338,9 +419,10 @@ int wmain(int argc, char* args[])
 				previous_time = current_time;
 				update(forms_list);
 			}
-
 			// Render the scene
-			render(forms_list, camera_position);
+			handleZoom(&zooming, &zoomValue, &zoomStep);
+
+			render(forms_list, camera_position, camera_target);
 
 			// Update window screen
 			SDL_GL_SwapWindow(gWindow);
