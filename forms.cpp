@@ -231,14 +231,13 @@ void Pales::updateSpeed(double windSpeed, double attackAngle)
 
 		double masseAirApplique = rho * M_PI * pow(rayonPale, 2) * windSpeed * sin(attackAngle);
 		double energieCinetiqueAir = masseAirApplique * pow(windSpeed, 2);
-		
-	
+			
 		double radians = sqrt(energieCinetiqueAir / inertiePale);
 		double degrees = radians * 180 / M_PI;
 		double tourmin = degrees * 60 / 360;
 		printf("masseAirApplique = %f\nenergieCinetique = %f\n radians = %f\n tour/min = %f\n",
 			masseAirApplique, energieCinetiqueAir, radians, tourmin);
-		setAnim(Animation(anim.getCurrentAngle(), degrees, Vector(1, 0, 0)));
+		getAnim().setAngle(degrees);
 	}
 }
 

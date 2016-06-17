@@ -400,7 +400,7 @@ int wmain(int argc, char* args[])
 						quit = true;
 						break;
 					case SDLK_i:
-						nextWindSpeed = min(35.0, windSystem->getWindSpeed() * 1.5);
+						nextWindSpeed = min(35.0, windSystem->getWindSpeed() * 1.2);
 						windSystem->setWindSpeed(nextWindSpeed);
 						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
 						break;
