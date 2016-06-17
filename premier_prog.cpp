@@ -8,7 +8,7 @@
 #include "geometry.h"
 // Module for generating and rendering forms
 #include "forms.h"
-
+#include "particle_system.h"
 
 using namespace std;
 
@@ -34,12 +34,10 @@ bool init(SDL_Window** window, SDL_GLContext* context);
 bool initGL();
 
 // Updating forms for animation
-void update(Form* formlist[MAX_FORMS_NUMBER]);
+void update(Drawable* formlist[MAX_FORMS_NUMBER]);
 
 // Renders scene to the screen
-const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos);
-
-void addForm(Form* form);
+const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos);
 
 // Frees media and shuts down SDL
 void close(SDL_Window** window);
@@ -136,7 +134,7 @@ bool initGL()
 	glLoadIdentity();
 
 	// Fog color
-	glClearColor(0.5, 0.5, 0.5, 1);
+	glClearColor(0, 0, 0, 1);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);
@@ -144,6 +142,8 @@ bool initGL()
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_FOG);
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	GLfloat fogcolor[4] = { 0.5, 0.5, 0.5, 1 };
 	GLint fogmode = GL_EXP;
@@ -178,13 +178,13 @@ bool initGL()
 	return success;
 }
 
-void update(Form* formlist[MAX_FORMS_NUMBER])
+void update(Drawable* formlist[MAX_FORMS_NUMBER])
 {
 	// Update the list of forms
 	unsigned short i = 0;
 	while (formlist[i] != NULL)
 	{
-		formlist[i]->update(ANIM_DELAY / 1000);
+		formlist[i]->update(ANIM_DELAY / 1000.0);
 		i++;
 	}
 }
@@ -217,7 +217,7 @@ void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 
 }
 
-const void render(Form* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target)
+const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target)
 {
 	// Clear color buffer and Z-Buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -308,8 +308,13 @@ int wmain(int argc, char* args[])
 		Point camera_position(0, 0, 5);
         Point camera_target(0,0,0);
 
+		float initialWindSpeed = 10;
+		WindSystem* windSystem = new WindSystem(initialWindSpeed, Point(-8, 15, 0), WHITE);
+		Eolienne* eolienne = new Eolienne(Point(4, 0, 0));
+		eolienne->getPales()->updateSpeed(initialWindSpeed, M_PI / 2);
+
 		// The forms to render
-		Form* forms_list[MAX_FORMS_NUMBER];
+		Drawable* forms_list[MAX_FORMS_NUMBER];
 		unsigned short number_of_forms = 0, i;
 		forms_list[number_of_forms] = NULL; // Do nothing but remove a warning
 		for (i = 0; i < MAX_FORMS_NUMBER; i++)
@@ -317,12 +322,8 @@ int wmain(int argc, char* args[])
 			forms_list[i] = NULL;
 		}
 
-		Eolienne* a = new Eolienne(Point(4, 0, 0));
-		a->getPales()->updateSpeed(7, M_PI / 2);
-		Eolienne* b = new Eolienne(Point(-4, 0, 0));
-		b->getPales()->updateSpeed(20, M_PI / 6);
-		forms_list[0] = a;
-		//forms_list[1] = b;
+		forms_list[0] = eolienne;
+		forms_list[1] = windSystem;
 
 		number_of_forms = 0;
 		cout << "nb de formes : " << number_of_forms << endl;
@@ -395,7 +396,14 @@ int wmain(int argc, char* args[])
 					case SDLK_ESCAPE:
 						quit = true;
 						break;
-
+					case SDLK_i:
+						windSystem->setWindSpeed(windSystem->getWindSpeed() * 1.5);
+						eolienne->getPales()->updateSpeed(windSystem->getWindSpeed(), M_PI / 2);
+						break;
+					case SDLK_k:
+						windSystem->setWindSpeed(windSystem->getWindSpeed() * 0.8);
+						eolienne->getPales()->updateSpeed(windSystem->getWindSpeed(), M_PI / 2);
+						break;
 					default:
 						break;
 					}

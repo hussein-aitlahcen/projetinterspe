@@ -14,6 +14,18 @@ class Point : public Coordinates
 public:
 	// Point constructor calls the base class constructor and do nothing more
 	Point(double xx = 0, double yy = 0, double zz = 0) : Coordinates(xx, yy, zz) {}
+	Point operator+(Coordinates& b)
+	{
+		return Point(x + b.x, y + b.y, z + b.z);
+	}
+	Point operator*(Coordinates& b)
+	{
+		return Point(x * b.x, y * b.y, z * b.z);
+	}
+	Point operator*(double factor)
+	{
+		return Point(x * factor, y * factor, z * factor);
+	}
 };
 
 class Vector : public Coordinates
@@ -25,11 +37,11 @@ public:
 	Vector(Point, Point);
 	// Compute the vector norm
 	double norm();
-	Vector operator+(Coordinates& b)
+	Vector operator+(Vector& b)
 	{
 		return Vector(x + b.x, y + b.y, z + b.z);
 	}
-	Vector operator*(Coordinates& b)
+	Vector operator*(Vector& b)
 	{
 		return Vector(x * b.x, y * b.y, z * b.z);
 	}

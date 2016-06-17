@@ -119,7 +119,7 @@ void Pales::updateSpeed(double windSpeed, double attackAngle)
 
 Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 {
-	Form* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
+	BasicForm* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
 	pales = new Pales(Point(-2.8, -0.3, 0));
 	nacelle->addChild(pales);
 	addChild(nacelle);
