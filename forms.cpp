@@ -71,7 +71,7 @@ Skybox3D::Skybox3D(Point c)
 {
 	position = c;
 
-	textures = singleton<SkyboxManager>().loadData("");
+	textures = singleton<SkyboxManager>().loadData("const_skybox");
 
 	glGenVertexArrays(1, &skyboxVAO);
 	glBindVertexArray(skyboxVAO);
@@ -92,9 +92,8 @@ void Skybox3D::renderSpecific()
 	//glDepthMask(GL_FALSE);
 	// Avant
 
-	float t = 50.0;
-	glPushMatrix();
-	glTranslatef(0, 50, 0);
+	float t = 100;
+	glTranslatef(0, 100, 0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textures->getTextureID());
 	glBegin(GL_TRIANGLE_STRIP);			// X Négatif		
 	glTexCoord3f(-t, -t, -t); glVertex3f(-t, -t, -t);
@@ -132,61 +131,11 @@ void Skybox3D::renderSpecific()
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);			// Z Positif	
-
 	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t, t);
 	glTexCoord3f(-t, t, t); glVertex3f(-t, t, t);
 	glTexCoord3f(t, -t, t); glVertex3f(t, -t, t);
 	glTexCoord3f(t, t, t); glVertex3f(t, t, t);
 	glEnd();
-	glPopMatrix();
-
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthMask(GL_TRUE);
-	/*glBegin(GL_QUADS);
-	{
-		glVertex3f(-1.0f, 1.0f, -1.0f);
-		glVertex3f(-1.0f, -1.0f, -1.0f);
-		glVertex3f(1.0f, -1.0f, -1.0f);
-		glVertex3f(1.0f, -1.0f, -1.0f);
-		glVertex3f(1.0f, 1.0f, -1.0f);
-		glVertex3f(-1.0f, 1.0f, -1.0f);
-		// Arrière
-		glVertex3f(-1.0f, -1.0f, 1.0f);
-		glVertex3f(-1.0f, -1.0f, -1.0f);
-		glVertex3f(-1.0f, 1.0f, -1.0f);
-		glVertex3f(-1.0f, 1.0f, -1.0f);
-		glVertex3f(-1.0f, 1.0f, 1.0f);
-		glVertex3f(-1.0f, -1.0f, 1.0f);
-		// Droite
-		glVertex3f(1.0f, -1.0f, -1.0f);
-		glVertex3f(1.0f, -1.0f, 1.0f);
-		glVertex3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(1.0f, 1.0f, -1.0f);
-		glVertex3f(1.0f, -1.0f, -1.0f);
-		// Gauche
-		glVertex3f(-1.0f, -1.0f, 1.0f);
-		glVertex3f(-1.0f, 1.0f, 1.0f);
-		glVertex3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(1.0f, -1.0f, 1.0f);
-		glVertex3f(-1.0f, -1.0f, 1.0f);
-		// Haut
-		glVertex3f(-1.0f, 1.0f, -1.0f);
-		glVertex3f(1.0f, 1.0f, -1.0f);
-		glVertex3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(-1.0f, 1.0f, 1.0f);
-		glVertex3f(-1.0f, 1.0f, -1.0f);
-		// Bas
-		glVertex3f(-1.0f, -1.0f, -1.0f);
-		glVertex3f(-1.0f, -1.0f, 1.0f);
-		glVertex3f(1.0f, -1.0f, -1.0f);
-		glVertex3f(1.0f, -1.0f, -1.0f);
-		glVertex3f(-1.0f, -1.0f, 1.0f);
-		glVertex3f(1.0f, -1.0f, 1.0f);
-	}
-	glDepthMask(GL_TRUE);*/
 }
 
 
@@ -251,5 +200,4 @@ Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 
 Skybox::Skybox(Point pos) : Skybox3D(pos)
 {
-
 }

@@ -184,12 +184,12 @@ public:
 	{
 		if (models.count(name) == 0)
 		{
-			printf("cached object - %s\n", name.c_str());
+			printf("loading new object - %s\n", name.c_str());
 			T* model = new T(name);
 			models[name] = model;
 			return model;
 		}
-		printf("loading new object - %s\n", name.c_str());
+		printf("cached object - %s\n", name.c_str());
 		return models.at(name);
 	}
 };

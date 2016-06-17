@@ -141,18 +141,9 @@ bool initGL()
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
-	glEnable(GL_FOG);
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	GLfloat fogcolor[4] = { 0.5, 0.5, 0.5, 1 };
-	GLint fogmode = GL_EXP;
-	glFogi(GL_FOG_MODE, fogmode);
-	glFogfv(GL_FOG_COLOR, fogcolor);
-	glFogf(GL_FOG_DENSITY, 0.10);
-	glFogf(GL_FOG_START, 1.0);
-	glFogf(GL_FOG_END, 5.0);
-
+	
 	float lightSpecularColor[] = { 0.8, 0.8, 0.8 };
 	float lightDiffuseColor[] = { 1, 1, 1 };
 	float lightPos[] = { 0, 0, 5 };
@@ -309,8 +300,9 @@ int wmain(int argc, char* args[])
         Point camera_target(0,0,0);
 
 		float initialWindSpeed = 10;
-		WindSystem* windSystem = new WindSystem(initialWindSpeed, Point(-8, 15, 0), WHITE);
-		Eolienne* eolienne = new Eolienne(Point(4, 0, 0));
+		WindSystem* windSystem = new WindSystem(initialWindSpeed, Point(-8, 22, 0), WHITE);
+		Eolienne* eolienne = new Eolienne(Point(0, 7, 0));
+		Eolienne();
 		Skybox* skybox = new Skybox(Point(1, 0, 0));
 		eolienne->getPales()->updateSpeed(initialWindSpeed, M_PI / 2);
 
@@ -324,7 +316,6 @@ int wmain(int argc, char* args[])
 
 
 		forms_list[0] = skybox;
-
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
 
