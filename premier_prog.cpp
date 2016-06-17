@@ -234,7 +234,6 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	glRotated(scene_angle.y, 0, 1, 0);
 	glRotated(scene_angle.z, 0, 0, 1);
 	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
-	formlist[0]->render();
 
 	// X, Y and Z axis
 	glPushMatrix(); // Preserve the camera viewing point for further forms
@@ -255,7 +254,7 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	glPopMatrix();
 
 	// Render the list of forms
-	unsigned short i = 1;
+	unsigned short i = 0; //A partir de 1 car skybox
 	while (formlist[i] != NULL)
 	{
 		formlist[i]->render();
@@ -306,12 +305,13 @@ int wmain(int argc, char* args[])
 		SDL_Event event;
 
 		// Camera position
-		Point camera_position(0, 0, 5);
+		Point camera_position(0, 5, 5);
         Point camera_target(0,0,0);
 
 		float initialWindSpeed = 10;
 		WindSystem* windSystem = new WindSystem(initialWindSpeed, Point(-8, 15, 0), WHITE);
 		Eolienne* eolienne = new Eolienne(Point(4, 0, 0));
+		Skybox* skybox = new Skybox(Point(1, 0, 0));
 		eolienne->getPales()->updateSpeed(initialWindSpeed, M_PI / 2);
 
 		// The forms to render
@@ -322,13 +322,9 @@ int wmain(int argc, char* args[])
 			forms_list[i] = NULL;
 		}
 
-		Skybox* skybox = new Skybox(Point(1, 0, 0));
-		forms_list[0] = skybox;
-
-		number_of_forms = 0;
-		cout << "nb de formes : " << number_of_forms << endl;
 
 		forms_list[0] = skybox;
+
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
 
