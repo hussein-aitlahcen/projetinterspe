@@ -87,9 +87,22 @@ class SkyboxTextures
 {
 private:
 	GLuint textureID;
+	vector<const GLchar*> faces;
+
 	int width, height;
 	unsigned char* image;
 	int channels;
+
+	GLenum cube_map_target[6] = 
+	{
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+	};
+
 public:
 	// +X (right)
 	// -X (left)
@@ -99,15 +112,6 @@ public:
 	// -Z (back)
 	SkyboxTextures(string name)
 	{
-		vector<const GLchar*> faces;
-		GLenum cube_map_target[6] = {
-			GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-			GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-			GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-			GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-			GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-			GL_TEXTURE_CUBE_MAP_POSITIVE_Z
-		};
 
 		faces.push_back("model/right.tga");
 		faces.push_back("model/left.tga");
@@ -121,9 +125,7 @@ public:
 		for (GLuint i = 0; i < faces.size(); i++)
 		{
 			image = SOIL_load_image(faces[i], &width, &height, &channels, SOIL_LOAD_RGB);
-
 			glTexImage2D(cube_map_target[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-			//glTexImage2D(cube_map_target[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 			SOIL_free_image_data(image);
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
