@@ -124,6 +124,7 @@ public:
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 		for (GLuint i = 0; i < faces.size(); i++)
 		{
+
 			image = SOIL_load_image(faces[i], &width, &height, &channels, SOIL_LOAD_RGB);
 			glTexImage2D(cube_map_target[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 			SOIL_free_image_data(image);
