@@ -54,8 +54,12 @@ public:
 	{
 		alpha = 1;
 	}
+
 	Animation& getAnim() { return anim; }
 	void setAnim(Animation ani) { anim = ani; }
+	Point getPosition() { return position; }
+	void setPosition(Point p) { position = p; }
+
 	void addChild(T* child)
 	{
 		childs.push_back(child);
@@ -130,7 +134,7 @@ class Skybox3D : public BasicForm
 {
 private:
 	vector<const GLchar*> faces;
-	SkyboxTextures* textures;
+	SkyboxTextures* texturesSkybox;
 	Point position;
 
 
@@ -178,8 +182,6 @@ private:
 		-1.0f, -1.0f,  1.0f,
 		1.0f, -1.0f,  1.0f
 	};
-
-	GLuint skyboxVAO, skyboxVBO;
 
 
 public:

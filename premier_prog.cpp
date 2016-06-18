@@ -143,20 +143,14 @@ bool initGL()
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	float lightSpecularColor[] = { 0.8, 0.8, 0.8 };
-	float lightDiffuseColor[] = { 1, 1, 1 };
-	float lightPos[] = { 0, 0, 5 };
-	float lightSpot[] = { 0, 0, 0 };
 
+	float lightSpecularColor[] = { 1, 1, 1 };
+	float lightDiffuseColor[] = { 1, 1, 1 }; 
+	float lightAmbient[] = { 0.1, 0.1, 0.1 };
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecularColor);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuseColor);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, lightSpot);
-
-
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	glMateriali(GL_FRONT, GL_SHININESS, 128);
 
 	// Check for error
 	error = glGetError();
@@ -198,7 +192,6 @@ void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 			scene_zoom.y *= 1.05;
 			scene_zoom.z *= 1.05;
 		}
-
 
 		if (abs(*zoomValue) <= 0.01)
 		{
@@ -300,7 +293,8 @@ int wmain(int argc, char* args[])
         Point camera_target(0,0,0);
 
 		float initialWindSpeed = 10;
-		WindSystem* windSystem = new WindSystem(initialWindSpeed, Point(-8, 22, 0), WHITE);
+		Vector windDirection = Vector(1, 0, 0);
+		WindSystem* windSystem = new WindSystem(windDirection, initialWindSpeed, Point(-20, 22, 0), BLUE);
 		Eolienne* eolienne = new Eolienne(Point(0, 7, 0));
 		Eolienne();
 		Skybox* skybox = new Skybox(Point(1, 0, 0));
@@ -319,7 +313,6 @@ int wmain(int argc, char* args[])
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
 
-		float nextWindSpeed;
 		// Get first "current time"
 		previous_time = SDL_GetTicks();
 		// While application is running
@@ -391,14 +384,32 @@ int wmain(int argc, char* args[])
 						quit = true;
 						break;
 					case SDLK_i:
-						nextWindSpeed = min(35.0, windSystem->getWindSpeed() * 1.2);
-						windSystem->setWindSpeed(nextWindSpeed);
-						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
+						windSystem->setSpeed(min(35.0, windSystem->getSpeed() * 1.2));
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
 						break;
 					case SDLK_k:
-						nextWindSpeed = max(4.0, windSystem->getWindSpeed() * 0.8);
-						windSystem->setWindSpeed(nextWindSpeed);
-						eolienne->getPales()->updateSpeed(nextWindSpeed, M_PI / 2);
+						windSystem->setSpeed(max(4.0, windSystem->getSpeed() * 0.8));
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
+						break;
+					case SDLK_m:
+						windSystem->setDirection(
+							Vector(
+								windSystem->getDirection().x,
+								windSystem->getDirection().y,
+								windSystem->getDirection().z + 0.1
+							)
+						);
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
+						break;
+					case SDLK_l:
+						windSystem->setDirection(
+							Vector(
+								windSystem->getDirection().x,
+								windSystem->getDirection().y,
+								windSystem->getDirection().z - 0.1
+							)
+						);
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
 						break;
 					default:
 						break;
@@ -410,9 +421,9 @@ int wmain(int argc, char* args[])
 					if (dragging)
 					{
 						if (event.motion.xrel < 0)
-							scene_angle.y += event.motion.xrel *distance * cos(event.motion.xrel*M_PI / 180) / 20;
+							scene_angle.y += event.motion.xrel * distance * cos(event.motion.xrel*M_PI / 180) / 20;
 						else
-							scene_angle.y += event.motion.xrel *distance * cos(event.motion.xrel*M_PI / 180) / 20;
+							scene_angle.y += event.motion.xrel * distance * cos(event.motion.xrel*M_PI / 180) / 20;
 						if (event.motion.yrel < 0)
 							scene_angle.x += event.motion.yrel * distance * cos(event.motion.yrel*M_PI / 180) / 20;
 						else
