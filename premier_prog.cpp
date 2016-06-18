@@ -44,7 +44,7 @@ void close(SDL_Window** window);
 
 Vector scene_angle = Vector(0, 0, 0);
 Vector scene_translation = Vector(0, 0, 0);
-Vector scene_zoom = Vector(1, 1, 1);
+Vector scene_zoom = Vector(0.07, 0.07, 0.07);
 
 
 /***************************************************************************/
@@ -192,7 +192,6 @@ void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 			scene_zoom.y *= 1.05;
 			scene_zoom.z *= 1.05;
 		}
-
 		if (abs(*zoomValue) <= 0.01)
 		{
 			*zooming = false;
