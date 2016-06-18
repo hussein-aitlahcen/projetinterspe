@@ -54,8 +54,12 @@ public:
 	{
 		alpha = 1;
 	}
+
 	Animation& getAnim() { return anim; }
 	void setAnim(Animation ani) { anim = ani; }
+	Point getPosition() { return position; }
+	void setPosition(Point p) { position = p; }
+
 	void addChild(T* child)
 	{
 		childs.push_back(child);
