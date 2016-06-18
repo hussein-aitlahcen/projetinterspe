@@ -25,6 +25,12 @@ void WindParticle::renderSpecific()
 	gluDeleteQuadric(quad);
 }
 
+WindSystem::WindSystem(Vector direction, float speed, Point position, Color color) : ParticleSystem(position, color)
+{
+	this->speed = speed;
+	this->direction = direction;
+}
+
 void WindSystem::generateParticles()
 {
 	for (size_t i = 0; i < MAX_PARTICLE; i++)
@@ -52,11 +58,11 @@ WindParticle* WindSystem::generateWindParticle()
 
 	currentParticle = fmod(currentParticle + 1, MAX_PARTICLE);
 
-	float randomSpeed = fmod(rand(), (speed * 1.5)) + 5;
+	float randomSpeed = fmod(rand(),  15 + (speed * 2));
 
 	return new WindParticle(
-		Vector(randomSpeed, 0, 0),
-		Vector(1, 0, 0), 
+		direction * randomSpeed,
+		Vector(1, 1, 1), 
 		Point(currentX, currentY, currentZ)
 	);
 }

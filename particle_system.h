@@ -86,14 +86,14 @@ private:
 	const int MAX_PARTICLE = WIND_PARTICLE_LIFE * 50;
 	int currentParticle;
 	float speed;
+	Vector direction;
 public:
-	WindSystem(float windSpeed, Point position, Color color) : ParticleSystem(position, color)
-	{
-		speed = windSpeed;
-	}
-
-	void setWindSpeed(float windSpeed) { speed = windSpeed; }
-	float getWindSpeed() { return speed; }
+	WindSystem(Vector direction, float speed, Point position, Color color);
+	void setSpeed(float windSpeed) { speed = windSpeed; }
+	float getSpeed() { return speed; }
+	void setDirection(Vector direction) { this->direction = direction; }
+	Vector getDirection() { return direction; }
+	float getAngle() { return atan(abs(direction.x / direction.z)); }
 
 	void generateParticles();
 	WindParticle* generateWindParticle();

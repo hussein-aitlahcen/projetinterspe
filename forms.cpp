@@ -92,8 +92,8 @@ void Skybox3D::renderSpecific()
 	//glDepthMask(GL_FALSE);
 	// Avant
 
-	float t = 100;
-	glTranslatef(0, 100, 0);
+	float t = 200;
+	glTranslatef(0, 200, 0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textures->getTextureID());
 	glBegin(GL_TRIANGLE_STRIP);			// X Négatif		
 	glTexCoord3f(-t, -t, -t); glVertex3f(-t, -t, -t);
