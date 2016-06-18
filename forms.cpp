@@ -83,7 +83,7 @@ void Skybox3D::renderSpecific()
 	// Avant
 
 	float t = 200;
-	glTranslatef(0, t/3, 0);
+	glTranslatef(0, t/10, 0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texturesSkybox->getTextureID());
 	glBegin(GL_TRIANGLE_STRIP);			// X Négatif		
@@ -101,10 +101,10 @@ void Skybox3D::renderSpecific()
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);			// Y Négatif	
-	glTexCoord3f(-t, -t, -t); glVertex3f(-t, -t/3, -t);
-	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t/3, t);
-	glTexCoord3f(t, -t, -t); glVertex3f(t, -t/3, -t);
-	glTexCoord3f(t, -t, t); glVertex3f(t, -t/3, t);
+	glTexCoord3f(-t, -t, -t); glVertex3f(-t, -t / 10, -t);
+	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t / 10, t);
+	glTexCoord3f(t, -t, -t); glVertex3f(t, -t / 10, -t);
+	glTexCoord3f(t, -t, t); glVertex3f(t, -t / 10, t);
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);			// Y Positif		
