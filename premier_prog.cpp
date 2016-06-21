@@ -47,6 +47,7 @@ Vector scene_translation = Vector(0, 0, 0);
 Vector scene_zoom = Vector(0.07, 0.07, 0.07);
 
 
+
 /***************************************************************************/
 /* Functions implementations                                               */
 /***************************************************************************/
@@ -147,10 +148,12 @@ bool initGL()
 	float lightSpecularColor[] = { 1, 1, 1 };
 	float lightDiffuseColor[] = { 1, 1, 1 }; 
 	float lightAmbient[] = { 0.1, 0.1, 0.1 };
+	float lightPos[] = { 0,50,0 };
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecularColor);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuseColor);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
 	// Check for error
 	error = glGetError();
@@ -218,6 +221,11 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	glRotated(scene_angle.z, 0, 0, 1);
 	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
 
+	glUseProgram(test->getProgramID());
+	glUniformMatrix4fv(test->getProgramID(), 1, GL_FALSE,);
+
+	glUseProgram(test2->getProgramID());
+
 	// X, Y and Z axis
 	glPushMatrix(); // Preserve the camera viewing point for further forms
 	// Render the coordinates system
@@ -237,7 +245,7 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	glPopMatrix();
 
 	// Render the list of forms
-	unsigned short i = 0; //A partir de 1 car skybox
+	unsigned short i = 0; 
 	while (formlist[i] != NULL)
 	{
 		formlist[i]->render();
@@ -267,7 +275,6 @@ int wmain(int argc, char* args[])
 	// OpenGL context
 	SDL_GLContext gContext;
 
-
 	// Start up SDL and create window
 	if (!init(&gWindow, &gContext))
 	{
@@ -276,9 +283,12 @@ int wmain(int argc, char* args[])
 	else
 	{
 		// Main loop flag
+		printf("%s\n\n", glGetString(GL_VERSION));
+
 		bool quit = false;
 		bool zooming = false;
 		bool dragging = false;
+
 
 		float zoomStep = 0;
 		float zoomValue = 0;
@@ -335,6 +345,7 @@ int wmain(int argc, char* args[])
 						dragging = true;
 					else if (event.button.button == SDL_BUTTON_MIDDLE)
 					{
+
 						camera_target.x = scene_translation.x;
 						camera_target.y = scene_translation.y;
 						camera_target.z = scene_translation.z;

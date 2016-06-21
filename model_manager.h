@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <GL/glew.h>
 #include "picojson.h"
@@ -112,7 +113,6 @@ public:
 	// -Z (back)
 	SkyboxTextures(string name)
 	{
-		glActiveTexture(GL_TEXTURE0);
 		faces.push_back("model/right.tga");
 		faces.push_back("model/left.tga");
 		faces.push_back("model/bottom.tga");
@@ -154,7 +154,6 @@ private:
 public:
 	Texture(string filename)
 	{
-		glActiveTexture(GL_TEXTURE1);
 		image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
 
 		glGenTextures(1, &textureID);
@@ -173,6 +172,152 @@ public:
 	GLuint getTextureID()
 	{
 		return textureID;
+	}
+
+};
+
+class Shader
+{
+private:
+	GLuint programID;
+
+	string name, nameVertexShader, nameFragmentShader, nameGeometryShader, nameComputeShader;
+
+	GLuint fShaderID, vShaderID, gShaderID, cShaderID;
+	GLint successFShader, successVShader, successGShader, successCShader, successLink;
+	GLchar infoLog[512];
+public:
+	Shader(string filename)
+	{
+		name = filename; 
+		nameVertexShader = name + ".vertex";
+		nameFragmentShader = name + ".fragment";
+		nameGeometryShader = name + ".geometry";
+		nameComputeShader = name + ".compute";
+
+		std::stringstream vShaderStream, fShaderStream, gShaderStream, cShaderStream;
+		ifstream fShaderFile = ifstream(nameFragmentShader.c_str(), ios::in);
+		ifstream vShaderFile =  ifstream(nameVertexShader.c_str(), ios::in);
+		ifstream gShaderFile = ifstream(nameGeometryShader.c_str(), ios::in);
+		ifstream cShaderFile = ifstream(nameComputeShader.c_str(), ios::in);
+
+		if (fShaderFile.is_open())
+		{
+			fShaderStream << fShaderFile.rdbuf();
+			string result = fShaderStream.str();
+			const GLchar* fShaderCode = result.c_str();
+
+
+			fShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+			glShaderSource(fShaderID, 1, &fShaderCode, NULL);
+			glCompileShader(fShaderID);
+
+			glGetShaderiv(fShaderID, GL_COMPILE_STATUS, &successFShader);
+
+			if (!successFShader)
+			{
+				glGetShaderInfoLog(fShaderID, 512, NULL, infoLog);
+				printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s", infoLog);
+			};
+		}
+
+		if (vShaderFile.is_open())
+		{
+			vShaderStream << vShaderFile.rdbuf();
+			string result = vShaderStream.str();
+			const GLchar* vShaderCode = result.c_str();
+
+
+			vShaderID = glCreateShader(GL_VERTEX_SHADER);
+			glShaderSource(vShaderID, 1, &vShaderCode, NULL);
+			glCompileShader(vShaderID);
+
+			glGetShaderiv(vShaderID, GL_COMPILE_STATUS, &successVShader);
+
+			if (!successVShader)
+			{
+				glGetShaderInfoLog(vShaderID, 512, NULL, infoLog);
+				printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s", infoLog);
+			};
+		}
+
+		if (gShaderFile.is_open())
+		{
+			gShaderStream << gShaderFile.rdbuf();
+			string result = gShaderStream.str();
+			const GLchar* gShaderCode = result.c_str();
+
+
+			gShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+			glShaderSource(gShaderID, 1, &gShaderCode, NULL);
+			glCompileShader(gShaderID);
+
+			glGetShaderiv(gShaderID, GL_COMPILE_STATUS, &successGShader);
+
+			if (!successGShader)
+			{
+				glGetShaderInfoLog(gShaderID, 512, NULL, infoLog);
+				printf("ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n%s", infoLog);
+			};
+		}
+
+		if (cShaderFile.is_open())
+		{
+			cShaderStream << cShaderFile.rdbuf();
+			string result = cShaderStream.str();
+			const GLchar* cShaderCode = result.c_str();
+
+
+			cShaderID = glCreateShader(GL_COMPUTE_SHADER);
+			glShaderSource(cShaderID, 1, &cShaderCode, NULL);
+			glCompileShader(cShaderID);
+
+			glGetShaderiv(cShaderID, GL_COMPILE_STATUS, &successCShader);
+
+			if (!successCShader)
+			{
+				glGetShaderInfoLog(cShaderID, 512, NULL, infoLog);
+				printf("ERROR::SHADER::COMPUTE::COMPILATION_FAILED\n%s", infoLog);
+			};
+		}
+
+		programID = glCreateProgram();
+
+		if(successFShader)
+			glAttachShader(programID, fShaderID);
+
+		if(successVShader)
+			glAttachShader(programID, vShaderID);
+
+		if(successGShader)
+			glAttachShader(programID, gShaderID);
+
+		if(successCShader)
+			glAttachShader(programID, cShaderID);
+
+		glLinkProgram(programID);
+
+		glGetProgramiv(this->programID, GL_LINK_STATUS, &successLink);
+		if (!successLink)
+		{
+			glGetProgramInfoLog(this->programID, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		}
+
+		glDeleteShader(vShaderID);
+		glDeleteShader(fShaderID);
+		glDeleteShader(gShaderID);
+		glDeleteShader(cShaderID);
+
+		fShaderFile.close();
+		vShaderFile.close();
+		gShaderFile.close();
+		cShaderFile.close();
+	}
+
+	GLuint getProgramID()
+	{
+		return  programID;
 	}
 
 };
@@ -203,6 +348,10 @@ class ModelManager : public GenericManager<Model>
 };
 
 class TextureManager : public GenericManager<Texture>
+{
+};
+
+class ShaderManager :  public GenericManager<Shader>
 {
 };
 
