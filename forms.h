@@ -130,6 +130,16 @@ public:
 	void renderSpecific(); 
 };
 
+class Cylinder : public BasicForm
+{
+private:
+	double radius;
+	double height;
+public:
+	Cylinder(Point position = Point(), double h = 1, double d = 1.0, Color cl = Color());
+	void renderSpecific();
+};
+
 class Skybox3D : public BasicForm
 {
 private:
@@ -219,6 +229,22 @@ class Skybox : public Skybox3D
 {
 public:
 	Skybox(Point pos = Point());
+};
+
+class AirHokey : public BasicForm
+{
+private:
+	Vector direction;
+	Vector velocite;
+	Cylinder* palet;
+	Cube* x;
+	Cube* maxX;
+	Cube* y;
+	Cube* maxY;
+public:
+	AirHokey(Point pos = Point(), Color cl = WHITE);
+	void renderSpecific();
+	void update(float dt);
 };
 
 

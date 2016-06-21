@@ -67,6 +67,32 @@ void Cube::renderSpecific()
 	glEnd();
 }
 
+Cylinder::Cylinder(Point c, double h, double r, Color cl)
+{
+	position = c;
+	height = h;
+	radius = r;
+	col = cl;
+}
+
+void Cylinder::renderSpecific()
+{
+	GLUquadric *quad, *disk1, *disk2;
+	quad = gluNewQuadric();
+	disk1 = gluNewQuadric();
+	disk2 = gluNewQuadric();
+	{
+		gluCylinder(quad, radius, radius, height, 20, 20);
+		gluDisk(disk1, 0, radius, 20, 20);
+		glTranslated(0, 0, height);
+		gluDisk(disk2, 0, radius, 20, 20);
+		glTranslated(0, 0, -height);
+	}
+	gluDeleteQuadric(disk1);
+	gluDeleteQuadric(disk2);
+	gluDeleteQuadric(quad);
+}
+
 Skybox3D::Skybox3D(Point c)
 {
 	position = c;
@@ -191,4 +217,72 @@ Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 
 Skybox::Skybox(Point pos) : Skybox3D(pos)
 {
+}
+
+AirHokey::AirHokey(Point pos, Color color)
+{
+	position = pos;
+	col = color;
+	setAnim(Animation(90, 0, Vector(1, 0, 0)));
+	x = new Cube(Point(-10, 0, 0), 1, 20, 1, WHITE);
+	maxX = new Cube(Point(10, 0, 0), 1, 20, 1, WHITE);
+	y = new Cube(Point(0, -10, 0), 20, 1, 1, WHITE);
+	maxY = new Cube(Point(0, 10, 0), 20, 1, 1, WHITE);
+	palet = new Cylinder(Point(), 0.2, 0.5, WHITE);
+	palet->setAnim(Animation(180, 0, Vector(1, 0, 0)));
+	direction = Vector(1, 0.5, 0);
+	velocite = Vector(25, 25, 0);
+	addChild(x);
+	addChild(maxX);
+	addChild(y);
+	addChild(maxY);
+	addChild(palet);
+}
+
+void AirHokey::renderSpecific()
+{
+}
+
+Vector calcul_rebond(Vector vi, Vector normal)
+{
+	return vi + (vi * normal * normal * -2);
+}
+
+int collision(float rayon, float x, float maxX, float y, float maxY, Point position)
+{
+	int colX = position.x + rayon;
+	if (colX >= maxX) return 3;
+	if (colX <= x) return 1;
+	int colY = position.y + rayon;
+	if (colY >= maxY) return 4;
+	if (colY <= y) return 2;
+	return 0;
+}
+
+
+void AirHokey::update(float dt)
+{
+	palet->setPosition(palet->getPosition() + (direction * velocite * dt));
+	int bordCollision = collision(0.5, -10, 10, -10, 10, palet->getPosition());
+	if (bordCollision != 0)
+	{
+		printf("collision %d\n", bordCollision);
+		Vector normale;
+		switch (bordCollision)
+		{
+		case 1:
+			normale = Vector(1, 0, 0);
+			break;
+		case 2:
+			normale = Vector(0, 1, 0);
+			break;
+		case 3:
+			normale = Vector(-1, 0, 0);
+			break;
+		case 4:
+			normale = Vector(0, -1, 0);
+			break;
+		}
+		direction = calcul_rebond(direction, normale);
+	}
 }
