@@ -11,7 +11,7 @@ private:
 	Vector rot_vect;
 
 public:
-	Animation(double current = 0.0, double agl = 0.0, Vector vect = Vector(1.0, 0.0, 0.0)) { angle = agl; rot_vect = vect; }
+	Animation(double current = 0.0, double agl = 0.0, Vector vect = Vector(1.0, 0.0, 0.0)) { currentAngle = current; angle = agl; rot_vect = vect; }
 	const double getAngle() { return angle; }
 	void setAngle(double agl) { angle = agl; }
 	const Vector getRotVect() { return rot_vect; }

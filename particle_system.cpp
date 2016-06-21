@@ -29,7 +29,7 @@ void WindParticle::renderSpecific()
 {
 	GLUquadric *quad = gluNewQuadric();
 	{
-		gluSphere(quad, 0.2, 10, 10);
+		gluSphere(quad, 0.3, 10, 10);
 	}
 	gluDeleteQuadric(quad);
 }
@@ -47,37 +47,42 @@ WindSystem::WindSystem(Vector direction, float speed, Point position, Color colo
 
 void WindSystem::respawnParticle(WindParticle* particle)
 {
-	float randomSpeed = fmod(rand(), 10 + (speed * 3));
+	const float maxPerLine = sqrt(WIND_MAX_PARTICLE);
+	
+	const float minX = -WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
+	const float maxX = WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
+	const float dX = maxX - minX;
+	const float xStep = dX / maxPerLine;
+
+	const float minZ = -WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
+	const float maxZ =  WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
+	const float dZ = maxZ - minZ;
+	const float zStep = dZ / maxPerLine;
+
+	const float minY = -WIND_GRILL_HALF_HEIGHT;
+	const float maxY = +WIND_GRILL_HALF_HEIGHT;
+	const float dY = maxY - minY;
+	const float yStep = dY / maxPerLine;
+
+	const float currentLine = currentParticle / maxPerLine;
+	const float currentIndex = fmod(currentParticle, maxPerLine);
+	const float currentX = minX + xStep * currentIndex;
+	const float currentY = minY + yStep * currentLine;
+	const float currentZ = minZ + zStep * currentIndex;
+	currentParticle = fmod(currentParticle + 1, WIND_MAX_PARTICLE);
+	float randomSpeed = 5 + fmod(rand(), 10 + (speed * 3));
+
 	particle->setLifespan(WIND_PARTICLE_LIFE);
 	particle->setVelocity(direction * randomSpeed);
 	particle->setAcceleration(Vector(1, 1, 1));
-	particle->setPosition(particle->getInitialPosition());
+	particle->setPosition(Point(currentX, currentY, currentZ));
 }
 
 WindParticle* WindSystem::generateParticle()
 {
-	const float maxPerLine = sqrt(WIND_MAX_PARTICLE);
-	const float minZ = -WIND_GRILL_Z_FACTOR;
-	const float maxZ = +WIND_GRILL_Z_FACTOR;
-	const float dZ = maxZ - minZ;
-	const float zStep = dZ / maxPerLine;
-	const float minY = -WIND_GRILL_Y_FACTOR;
-	const float maxY = +WIND_GRILL_Y_FACTOR;
-	const float dY = maxY - minY;
-	const float yStep = dY / maxPerLine;
-	const float currentLine = currentParticle / maxPerLine;
-	const float currentIndex = fmod(currentParticle, maxPerLine);
-	const float currentX = 0;
-	const float currentY = minY + yStep * currentLine;
-	const float currentZ = minZ + zStep * currentIndex;
-
-	currentParticle = fmod(currentParticle + 1, WIND_MAX_PARTICLE);
-
-	float randomSpeed = fmod(rand(), 10 + (speed * 3));
-
 	return new WindParticle(
-		direction * randomSpeed,
+		direction,
 		Vector(1, 1, 1),
-		Point(currentX, currentY, currentZ)
+		Point(0, 0, 0)
 	);
 }

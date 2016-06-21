@@ -6,13 +6,13 @@
 #define MAX_PARTICLES 10000
 
 // 0.1 sec 100 ms
-#define PARTICLE_GENERATION_INTERVAL 0.075
+#define PARTICLE_GENERATION_INTERVAL 0.1
 
 // wind system spec
 #define WIND_PARTICLE_LIFE 1 // in second
-#define WIND_GRILL_Z_FACTOR 14 // 14*14 grill
-#define WIND_GRILL_Y_FACTOR WIND_GRILL_Z_FACTOR
-#define WIND_MAX_PARTICLE WIND_PARTICLE_LIFE * 50
+#define WIND_GRILL_HALF_WIDTH 14 // 14*14 grill
+#define WIND_GRILL_HALF_HEIGHT WIND_GRILL_HALF_WIDTH
+#define WIND_MAX_PARTICLE WIND_PARTICLE_LIFE * 100
 
 class Particle : public BasicForm
 {
@@ -141,7 +141,8 @@ public:
 	float getSpeed() { return speed; }
 	void setDirection(Vector direction) { this->direction = direction; }
 	Vector getDirection() { return direction; }
-	float getAngle() { return atan(abs(direction.x / direction.z)); }	
+	float getAngleFactor() { return atan(abs(direction.x / direction.z)); }
+	float getAngle() { return abs(direction.x / direction.z); }
 
 	void respawnParticle(WindParticle* particle);
 	WindParticle* generateParticle();

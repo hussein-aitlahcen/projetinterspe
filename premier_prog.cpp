@@ -134,7 +134,7 @@ bool initGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Fog color
+	// Color
 	glClearColor(0, 0, 0, 1);
 
 	glEnable(GL_DEPTH_TEST);
@@ -148,8 +148,9 @@ bool initGL()
 	float lightSpecularColor[] = { 1, 1, 1 };
 	float lightDiffuseColor[] = { 1, 1, 1 }; 
 	float lightAmbient[] = { 0.1, 0.1, 0.1 };
-	float lightPos[] = { 0,50,0 };
+	float lightPos[] = { 0, 100, 0 };
 
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecularColor);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuseColor);
@@ -220,11 +221,6 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	glRotated(scene_angle.y, 0, 1, 0);
 	glRotated(scene_angle.z, 0, 0, 1);
 	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
-
-	glUseProgram(test->getProgramID());
-	glUniformMatrix4fv(test->getProgramID(), 1, GL_FALSE,);
-
-	glUseProgram(test2->getProgramID());
 
 	// X, Y and Z axis
 	glPushMatrix(); // Preserve the camera viewing point for further forms
@@ -302,12 +298,11 @@ int wmain(int argc, char* args[])
         Point camera_target(0,0,0);
 
 		float initialWindSpeed = 10;
-		Vector windDirection = Vector(1, 0, 0);
+		Vector windDirection = Vector(1, 0, 1);
 		WindSystem* windSystem = new WindSystem(windDirection, initialWindSpeed, Point(-20, 22, 0), BLUE);
 		Eolienne* eolienne = new Eolienne(Point(0, 7, 0));
-		Eolienne();
 		Skybox* skybox = new Skybox(Point(1, 0, 0));
-		eolienne->getPales()->updateSpeed(initialWindSpeed, M_PI / 2);
+		eolienne->getPales()->updateSpeed(initialWindSpeed, windSystem->getAngleFactor());
 
 		// The forms to render
 		Drawable* forms_list[MAX_FORMS_NUMBER];
@@ -317,7 +312,8 @@ int wmain(int argc, char* args[])
 			forms_list[i] = NULL;
 		}
 
-
+		AirHokey* h = new AirHokey(Point(-40, 0, 0));
+		forms_list[3] = h;
 		forms_list[0] = skybox;
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
@@ -395,11 +391,11 @@ int wmain(int argc, char* args[])
 						break;
 					case SDLK_i:
 						windSystem->setSpeed(min(35.0, windSystem->getSpeed() * 1.2));
-						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_k:
 						windSystem->setSpeed(max(4.0, windSystem->getSpeed() * 0.8));
-						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_m:
 						windSystem->setDirection(
@@ -409,7 +405,7 @@ int wmain(int argc, char* args[])
 								windSystem->getDirection().z + 0.1
 							)
 						);
-						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_l:
 						windSystem->setDirection(
@@ -419,7 +415,7 @@ int wmain(int argc, char* args[])
 								windSystem->getDirection().z - 0.1
 							)
 						);
-						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngle());
+						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					default:
 						break;
