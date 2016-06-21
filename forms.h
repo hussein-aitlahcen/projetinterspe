@@ -145,6 +145,7 @@ class Skybox3D : public BasicForm
 private:
 	vector<const GLchar*> faces;
 	SkyboxTextures* texturesSkybox;
+	Texture* textureSol;
 	Point position;
 
 

@@ -98,10 +98,12 @@ Skybox3D::Skybox3D(Point c)
 	position = c;
 
 	texturesSkybox = singleton<SkyboxManager>().loadData("const_skybox");
+	//textureSol = singleton<TextureManager>().loadData("model/grass2.jpg");
 }
 
 void Skybox3D::renderSpecific()
 {
+
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_CUBE_MAP);
 	//glDisable(GL_DEPTH_TEST);
@@ -109,7 +111,8 @@ void Skybox3D::renderSpecific()
 	// Avant
 
 	float t = 200;
-	glTranslatef(0, t/3.5, 0);
+	float h = 4;
+	glTranslatef(0, t/h, 0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texturesSkybox->getTextureID());
 	glBegin(GL_TRIANGLE_STRIP);			// X Négatif		
@@ -126,11 +129,12 @@ void Skybox3D::renderSpecific()
 	glTexCoord3f(t, t, t); glVertex3f(t, t, t);
 	glEnd();
 
+
 	glBegin(GL_TRIANGLE_STRIP);			// Y Négatif	
-	glTexCoord3f(-t, -t, -t); glVertex3f(-t, -t / 3.5, -t);
-	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t / 3.5, t);
-	glTexCoord3f(t, -t, -t); glVertex3f(t, -t / 3.5, -t);
-	glTexCoord3f(t, -t, t); glVertex3f(t, -t / 3.5, t);
+	glTexCoord3f(-t, -t, -t); glVertex3f(-t, -t / h, -t);
+	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t / h, t);
+	glTexCoord3f(t, -t, -t); glVertex3f(t, -t / h, -t);
+	glTexCoord3f(t, -t, t); glVertex3f(t, -t / h, t);
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);			// Y Positif		
@@ -147,12 +151,30 @@ void Skybox3D::renderSpecific()
 	glTexCoord3f(t, t, -t); glVertex3f(t, t, -t);
 	glEnd();
 
+
 	glBegin(GL_TRIANGLE_STRIP);			// Z Positif	
 	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t, t);
 	glTexCoord3f(-t, t, t); glVertex3f(-t, t, t);
 	glTexCoord3f(t, -t, t); glVertex3f(t, -t, t);
 	glTexCoord3f(t, t, t); glVertex3f(t, t, t);
 	glEnd();
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glDisable(GL_TEXTURE_CUBE_MAP);
+
+	/*glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textureSol->getTextureID());
+
+
+	glBegin(GL_TRIANGLE_STRIP);			// Y Négatif	
+	glTexCoord3f(-t , -t, -t); glVertex3f(-t, -t / 3.5, -t);
+	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t / 3.5, t);
+	glTexCoord3f(t, -t, -t); glVertex3f(t, -t / 3.5, -t);
+	glTexCoord3f(t, -t, t); glVertex3f(t, -t / 3.5, t);
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);*/
 }
 
 
@@ -266,7 +288,7 @@ void AirHokey::update(float dt)
 	int bordCollision = collision(0.5, -10, 10, -10, 10, palet->getPosition());
 	if (bordCollision != 0)
 	{
-		printf("collision %d\n", bordCollision);
+		//printf("collision %d\n", bordCollision);
 		Vector normale;
 		switch (bordCollision)
 		{

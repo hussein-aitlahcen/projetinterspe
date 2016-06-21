@@ -27,6 +27,7 @@ WindParticle::WindParticle(Vector velocity, Vector accel, Point initialPosition)
 
 void WindParticle::renderSpecific()
 {
+
 	GLUquadric *quad = gluNewQuadric();
 	{
 		gluSphere(quad, 0.3, 10, 10);
@@ -49,10 +50,12 @@ void WindSystem::respawnParticle(WindParticle* particle)
 {
 	const float maxPerLine = sqrt(WIND_MAX_PARTICLE);
 	
+	const float factor = getAngle() > M_PI / 2 ? 1 : -1;
 	const float minX = -WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
 	const float maxX = WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
 	const float dX = maxX - minX;
 	const float xStep = dX / maxPerLine;
+
 
 	const float minZ = -WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
 	const float maxZ =  WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
@@ -66,6 +69,7 @@ void WindSystem::respawnParticle(WindParticle* particle)
 
 	const float currentLine = currentParticle / maxPerLine;
 	const float currentIndex = fmod(currentParticle, maxPerLine);
+
 	const float currentX = minX + xStep * currentIndex;
 	const float currentY = minY + yStep * currentLine;
 	const float currentZ = minZ + zStep * currentIndex;
@@ -75,7 +79,7 @@ void WindSystem::respawnParticle(WindParticle* particle)
 	particle->setLifespan(WIND_PARTICLE_LIFE);
 	particle->setVelocity(direction * randomSpeed);
 	particle->setAcceleration(Vector(1, 1, 1));
-	particle->setPosition(Point(currentX, currentY, currentZ));
+	particle->setPosition(Point(currentX*factor, currentY, currentZ));
 }
 
 WindParticle* WindSystem::generateParticle()

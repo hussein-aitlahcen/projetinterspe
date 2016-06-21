@@ -46,6 +46,7 @@ Vector scene_angle = Vector(0, 0, 0);
 Vector scene_translation = Vector(0, 0, 0);
 Vector scene_zoom = Vector(0.07, 0.07, 0.07);
 
+Shader* test;
 
 
 /***************************************************************************/
@@ -148,7 +149,7 @@ bool initGL()
 	float lightSpecularColor[] = { 1, 1, 1 };
 	float lightDiffuseColor[] = { 1, 1, 1 }; 
 	float lightAmbient[] = { 0.1, 0.1, 0.1 };
-	float lightPos[] = { 0, 100, 0 };
+	float lightPos[] = { 0, 50, 0 };
 
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
@@ -221,7 +222,7 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	glRotated(scene_angle.y, 0, 1, 0);
 	glRotated(scene_angle.z, 0, 0, 1);
 	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
-
+	glUseProgram(test->getProgramID());
 	// X, Y and Z axis
 	glPushMatrix(); // Preserve the camera viewing point for further forms
 	// Render the coordinates system
@@ -317,6 +318,9 @@ int wmain(int argc, char* args[])
 		forms_list[0] = skybox;
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
+
+		test = singleton<ShaderManager>().loadData("model/particle");
+
 
 		// Get first "current time"
 		previous_time = SDL_GetTicks();
