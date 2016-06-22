@@ -186,29 +186,98 @@ Pales::Pales(Point pos, Color cl) : Model3D("model/Pales.json", pos, cl)
 {
 }
 
+double calculTimeFactor(double coupleVisqueux, double inertie, double simulationTime)
+{
+	return 1 - (exp(-coupleVisqueux / inertie * simulationTime));
+}
+
+double calculPuissanceVent(double surface, double windspeed)
+{
+	static double rhoAir = 1.225;
+	return rhoAir * surface * pow(windspeed, 3) / 2;
+}
+
+double calculCoupleVent(double windspeed, double radius)
+{
+	return calculPuissanceVent(M_PI * pow(radius, 2), windspeed) / windspeed * radius;
+}
+
+double calculVitesseGeneratrice(double windspeed, double radius, double couplevisqueux, double coupleresistance,  double timeFactor, double factorK)
+{
+	return ((2 * (calculCoupleVent(windspeed, radius) - factorK * coupleresistance)) / (factorK * couplevisqueux))
+		* timeFactor;
+}
+
+void Pales::update(float dt)
+{
+	Model3D::update(dt);
+
+	totalSimulationTime += dt;
+
+	static double inertieGeneratrice = 13.3; // Kg.m^-2
+	static double coupleResGeneratrice = 104.4; // Nm
+	static double coupleVisqueuxGeneratrice = 10; // Nm.s^-1
+	static double k = 50; // multiplicateur 
+	static double rayon = 11; // m
+	static double rhoAir = 1.225; // Kg/m^3
+	
+	const double timeFactor = calculTimeFactor(coupleVisqueuxGeneratrice, inertieGeneratrice, totalSimulationTime - lastSimulationTime);
+	const double vitesseGeneratriceT = calculVitesseGeneratrice(
+		windSpeed, 
+		rayon,
+		coupleVisqueuxGeneratrice,
+		coupleResGeneratrice,
+		timeFactor,
+		k
+	);
+	const double vitesseGeneratriceMax = calculVitesseGeneratrice(
+		windSpeed,
+		rayon,
+		coupleVisqueuxGeneratrice,
+		coupleResGeneratrice,
+		1,
+		k
+	);
+	
+	double vitesseT = vitesseGeneratriceT / k;
+	double vitesseMax = vitesseGeneratriceMax / k;
+
+	if (simulationNum > 1)
+	{
+		// vent plus fort
+		if (windSpeed >= lastWindSpeed || vitesseMax >= currentSpeed)
+		{
+			currentSpeed = min(currentSpeed + ((currentSpeed + 1) * 0.25 * dt), vitesseMax);
+		}
+		else
+		{
+			currentSpeed = max(currentSpeed - (currentSpeed * 0.25 * dt), 0.0);
+		}
+	}
+	else
+	{
+		currentSpeed = vitesseT;
+	}
+	
+	const double degree = currentSpeed * 360 / 60.0 * dt;
+
+	getAnim().setCurrentAngle(fmod(getAnim().getCurrentAngle() + degree, 360.0));
+}
+
 
 void Pales::updateSpeed(double windSpeed, double attackAngle)
 {
-	if (attackAngle > 0)
-	{
-		const double rayonPale = 11;
-		const double rho = 1.225;
-		const double inertiePale = 133000;
-
-		double masseAirApplique = rho * M_PI * pow(rayonPale, 2) * windSpeed * sin(attackAngle);
-		double energieCinetiqueAir = masseAirApplique * pow(windSpeed, 2);
-			
-		double radians = sqrt(energieCinetiqueAir / inertiePale);
-		double degrees = radians * 180 / M_PI;
-		double tourmin = degrees * 60 / 360;
-		printf("masseAirApplique = %f\nenergieCinetique = %f\n radians = %f\n tour/min = %f\n",
-			masseAirApplique, energieCinetiqueAir, radians, tourmin);
-		getAnim().setAngle(degrees);
-	}
+	this->simulationNum++;
+	this->lastSimulationTime = this->totalSimulationTime;
+	this->lastSpeed = this->currentSpeed;
+	this->lastWindSpeed = this->windSpeed;
+	this->windSpeed = windSpeed;
+	this->attackAngle = attackAngle;
 }
 
 Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 {
+	stats = new EolienneStats(this);
 	BasicForm* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
 	pales = new Pales(Point(-2.8, -0.3, 0));
 	nacelle->addChild(pales);
@@ -266,7 +335,6 @@ void AirHokey::update(float dt)
 	int bordCollision = collision(0.5, -10, 10, -10, 10, palet->getPosition());
 	if (bordCollision != 0)
 	{
-		printf("collision %d\n", bordCollision);
 		Vector normale;
 		switch (bordCollision)
 		{
@@ -285,4 +353,34 @@ void AirHokey::update(float dt)
 		}
 		direction = calcul_rebond(direction, normale);
 	}
+}
+
+EolienneStats::EolienneStats(Eolienne * eolienne)
+{
+	parent = eolienne;
+	col = WHITE;
+}
+
+void EolienneStats::renderSpecific()
+{
+	Pales* pales = parent->getPales();
+	glBegin(GL_TRIANGLE_STRIP);
+	{
+		// vitesse vent
+		glVertex3f(-0.2, 0, 0);
+		glVertex3f(-0.2, pales->getWindSpeed() * 0.03, 0);
+		glVertex3f(-0.1, 0, 0);
+		glVertex3f(-0.1, pales->getWindSpeed() * 0.03, 0);
+	}
+	glEnd();
+
+	glBegin(GL_TRIANGLE_STRIP);
+	{
+		// vitesse turbine
+		glVertex3f(0.2, 0, 0);
+		glVertex3f(0.2, pales->getCurrentSpeed() * 0.01, 0);
+		glVertex3f(0.1, 0, 0);
+		glVertex3f(0.1, pales->getCurrentSpeed() * 0.01, 0);
+	}
+	glEnd();
 }

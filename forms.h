@@ -18,6 +18,9 @@
 
 using namespace std;
 
+class Eolienne;
+class EolienneStats;
+
 class Color
 {
 public:
@@ -211,18 +214,43 @@ public:
 
 class Pales : public Model3D
 {
+private:
+	int simulationNum;
+	double lastSimulationTime;
+	double totalSimulationTime;
+	double lastSpeed;
+	double currentSpeed;
+	double lastWindSpeed;
+	double windSpeed;
+	double attackAngle;
 public:
 	Pales(Point pos = Point(), Color cl = WHITE);
 	void updateSpeed(double windSpeed, double attackAngle);
+	void update(float dt);
+	int getSimulationNum() { return simulationNum; }
+	double getCurrentSpeed() { return currentSpeed; }
+	double getWindSpeed() { return windSpeed; }
+	double getAttackAngle() { return attackAngle; }
 };
 
 class Eolienne : public Model3D
 {
 private:
 	Pales* pales;
+	EolienneStats* stats;
 public:
 	Eolienne(Point pos = Point(), Color cl = WHITE);
 	Pales* getPales() { return pales; }
+	EolienneStats* getStats() { return stats; }
+};
+
+class EolienneStats : public BasicForm
+{
+private:
+	Eolienne* parent;
+public:
+	EolienneStats(Eolienne* eolienne);
+	void renderSpecific();
 };
 
 class Skybox : public Skybox3D

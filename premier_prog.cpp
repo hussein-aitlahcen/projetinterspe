@@ -165,13 +165,13 @@ bool initGL()
 	return success;
 }
 
-void update(Drawable* formlist[MAX_FORMS_NUMBER])
+void update(Drawable* formlist[MAX_FORMS_NUMBER], double dt)
 {
 	// Update the list of forms
 	unsigned short i = 0;
 	while (formlist[i] != NULL)
 	{
-		formlist[i]->update(ANIM_DELAY / 1000.0);
+		formlist[i]->update(dt);
 		i++;
 	}
 }
@@ -202,7 +202,7 @@ void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 
 }
 
-const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target)
+const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, const Point &cam_target, Eolienne* eolienne)
 {
 	// Clear color buffer and Z-Buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -213,6 +213,8 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 
 	// Set the camera position and parameters
 	gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, cam_target.x, cam_target.y, cam_target.z, 0.0, 1.0, 0.0);
+
+	eolienne->getStats()->render();
 
 	glTranslated(scene_translation.x, scene_translation.y, scene_translation.z);
 	glRotated(scene_angle.x, 1, 0, 0);
@@ -308,8 +310,6 @@ int wmain(int argc, char* args[])
 			forms_list[i] = NULL;
 		}
 
-		AirHokey* h = new AirHokey(Point(-40, 0, 0));
-		forms_list[3] = h;
 		forms_list[0] = skybox;
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
@@ -328,7 +328,6 @@ int wmain(int argc, char* args[])
 				float distance = sqrt(pow((camera_position.x), 2) + pow((camera_position.y), 2) + pow((camera_position.z), 2));
 				switch (event.type)
 				{
-					// User requests quit
 				case SDL_QUIT:
 					quit = true;
 					break;
@@ -359,12 +358,9 @@ int wmain(int argc, char* args[])
 					}
 				}
 				case SDL_KEYDOWN:
-					// Handle key pressed with current mouse position
 					SDL_GetMouseState(&x, &y);
-
 					switch (key_pressed)
 					{
-						// Quit the program when 'q' or Escape keys are pressed
 					case SDLK_RIGHT:
 					case SDLK_d:
 						scene_translation.x -= scene_zoom.x;
@@ -385,11 +381,11 @@ int wmain(int argc, char* args[])
 						quit = true;
 						break;
 					case SDLK_i:
-						windSystem->setSpeed(min(35.0, windSystem->getSpeed() * 1.2));
+						windSystem->setSpeed(min(40.0, windSystem->getSpeed() * 1.2));
 						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_k:
-						windSystem->setSpeed(max(4.0, windSystem->getSpeed() * 0.8));
+						windSystem->setSpeed(max(0.1, windSystem->getSpeed() * 0.8));
 						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_m:
@@ -443,13 +439,13 @@ int wmain(int argc, char* args[])
 			current_time = SDL_GetTicks(); // get the elapsed time from SDL initialization (ms)
 			if ((current_time - previous_time) > ANIM_DELAY)
 			{
+				update(forms_list, (double)(current_time - previous_time) / 1000.0);
 				previous_time = current_time;
-				update(forms_list);
 			}
 			// Render the scene
 			handleZoom(&zooming, &zoomValue, &zoomStep);
 
-			render(forms_list, camera_position, camera_target);
+			render(forms_list, camera_position, camera_target, eolienne);
 
 			// Update window screen
 			SDL_GL_SwapWindow(gWindow);

@@ -17,12 +17,13 @@ void Particle::update(float dt)
 	velocity = velocity * acceleration;
 	position = position + (velocity * dt);
 	lifeSpan -= dt;
+	alpha = lifeSpan / initialLifespan;
 }
 
 WindParticle::WindParticle(Vector velocity, Vector accel, Point initialPosition) 
 	: Particle(WIND_PARTICLE_LIFE, velocity, accel, initialPosition, WHITE)
 {
-	alpha = 0.8;
+	alpha = 1;
 }
 
 void WindParticle::renderSpecific()
@@ -45,17 +46,23 @@ WindSystem::WindSystem(Vector direction, float speed, Point position, Color colo
 	}
 }
 
+void WindSystem::renderSpecific()
+{
+	//glRotatef(getAngle(), 0, 1, 0);
+	ParticleSystem::renderSpecific();
+}
+
 void WindSystem::respawnParticle(WindParticle* particle)
 {
 	const float maxPerLine = sqrt(WIND_MAX_PARTICLE);
 	
-	const float minX = -WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
-	const float maxX = WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
+	const float minX = 0;
+	const float maxX = 0;
 	const float dX = maxX - minX;
 	const float xStep = dX / maxPerLine;
 
-	const float minZ = -WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
-	const float maxZ =  WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
+	const float minZ = -WIND_GRILL_HALF_WIDTH;
+	const float maxZ = WIND_GRILL_HALF_WIDTH;
 	const float dZ = maxZ - minZ;
 	const float zStep = dZ / maxPerLine;
 
@@ -69,6 +76,7 @@ void WindSystem::respawnParticle(WindParticle* particle)
 	const float currentX = minX + xStep * currentIndex;
 	const float currentY = minY + yStep * currentLine;
 	const float currentZ = minZ + zStep * currentIndex;
+
 	currentParticle = fmod(currentParticle + 1, WIND_MAX_PARTICLE);
 	float randomSpeed = 5 + fmod(rand(), 10 + (speed * 3));
 
@@ -83,6 +91,6 @@ WindParticle* WindSystem::generateParticle()
 	return new WindParticle(
 		direction,
 		Vector(1, 1, 1),
-		Point(0, 0, 0)
+		Point()
 	);
 }

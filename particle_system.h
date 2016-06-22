@@ -141,9 +141,16 @@ public:
 	float getSpeed() { return speed; }
 	void setDirection(Vector direction) { this->direction = direction; }
 	Vector getDirection() { return direction; }
-	float getAngleFactor() { return atan(abs(direction.x / direction.z)); }
-	float getAngle() { return abs(direction.x / direction.z); }
+	float getAngleFactor() { return atan(direction.x / direction.z); }
+	float getAngle() 
+	{ 
+		float angle = cos(direction.norm());
+		if (isnan(angle))
+			return 0;
+		return angle * 180 / M_PI;
+	}
 
+	void renderSpecific();
 	void respawnParticle(WindParticle* particle);
 	WindParticle* generateParticle();
 };
