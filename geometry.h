@@ -49,6 +49,7 @@ public:
 	{
 		return Vector(x * factor, y * factor, z * factor);
 	}
+	Point instant() { return Point(x, y, z); }
 };
 
 

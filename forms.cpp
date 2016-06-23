@@ -67,31 +67,58 @@ void Cube::renderSpecific()
 	glEnd();
 }
 
-Cylinder::Cylinder(Point c, double h, double r, Color cl)
+
+Fleche::Fleche(Point c, double w, double h, double d, Color color)
 {
 	position = c;
+	width = w;
 	height = h;
-	radius = r;
-	col = cl;
+	depth = d;
+	Form::col = color;
 }
 
-void Cylinder::renderSpecific()
+void Fleche::renderSpecific()
 {
-	GLUquadric *quad, *disk1, *disk2;
-	quad = gluNewQuadric();
-	disk1 = gluNewQuadric();
-	disk2 = gluNewQuadric();
+	const float half_w = width / 2;
+	const float half_h = height / 2;
+	const float half_d = depth / 2;
+	glBegin(GL_QUADS);
 	{
-		gluCylinder(quad, radius, radius, height, 20, 20);
-		gluDisk(disk1, 0, radius, 20, 20);
-		glTranslated(0, 0, height);
-		gluDisk(disk2, 0, radius, 20, 20);
-		glTranslated(0, 0, -height);
+		// Avant
+		glVertex3f(-half_w, -half_h, half_d);
+		glVertex3f(half_w, -half_h, half_d);
+		glVertex3f(half_w, half_h, half_d);
+		glVertex3f(-half_w, half_h, half_d);
+		// Arrière
+		glVertex3f(-half_w, -half_h, -half_d);
+		glVertex3f(half_w, -half_h, -half_d);
+		glVertex3f(half_w, half_h, -half_d);
+		glVertex3f(-half_w, half_h, -half_d);
+		// Droite
+		glVertex3f(half_w, -half_h, half_d);
+		glVertex3f(half_w, -half_h, -half_d);
+		glVertex3f(half_w, half_h, -half_d);
+		glVertex3f(half_w, half_h, half_d);
+		// Gauche
+		glVertex3f(-half_w, -half_h, half_d);
+		glVertex3f(-half_w, -half_h, -half_d);
+		glVertex3f(-half_w, half_h, -half_d);
+		glVertex3f(-half_w, half_h, half_d);
+		// Haut
+		glVertex3f(-half_w, half_h, half_d);
+		glVertex3f(half_w, half_h, half_d);
+		glVertex3f(half_w, half_h, -half_d);
+		glVertex3f(-half_w, half_h, -half_d);
+		// Bas
+		glVertex3f(-half_w, -half_h, half_d);
+		glVertex3f(half_w, -half_h, half_d);
+		glVertex3f(half_w, -half_h, -half_d);
+		glVertex3f(-half_w, -half_h, -half_d);
 	}
-	gluDeleteQuadric(disk1);
-	gluDeleteQuadric(disk2);
-	gluDeleteQuadric(quad);
+	glEnd();
 }
+
+
 
 Skybox3D::Skybox3D(Point c)
 {
@@ -208,31 +235,104 @@ Pales::Pales(Point pos, Color cl) : Model3D("model/Pales.json", pos, cl)
 {
 }
 
+double calculTimeFactor(double coupleVisqueux, double inertie, double simulationTime)
+{
+	return 1 - (exp(-coupleVisqueux / inertie * simulationTime));
+}
+
+double calculPuissanceVent(double surface, double windspeed)
+{
+	static double rhoAir = 1.225;
+	return rhoAir * surface * pow(windspeed, 3) / 2;
+}
+
+double calculCoupleVent(double windspeed, double radius)
+{
+	return calculPuissanceVent(M_PI * pow(radius, 2), windspeed) / windspeed * radius;
+}
+
+double calculVitesseGeneratrice(double windspeed, double radius, double couplevisqueux, double coupleresistance,  double timeFactor, double factorK)
+{
+	return ((2 * (calculCoupleVent(windspeed, radius) - factorK * coupleresistance)) / (factorK * couplevisqueux))
+		* timeFactor;
+}
+
+void Pales::update(float dt)
+{
+	Model3D::update(dt);
+
+	totalSimulationTime += dt;
+
+	static double inertieGeneratrice = 13.3; // Kg.m^-2
+	static double coupleResGeneratrice = 104.4; // Nm
+	static double coupleVisqueuxGeneratrice = 10; // Nm.s^-1
+	static double k = 50; // multiplicateur 
+	static double rayon = 11; // m
+	static double rhoAir = 1.225; // Kg/m^3
+	
+	const double timeFactor = calculTimeFactor(coupleVisqueuxGeneratrice, inertieGeneratrice, totalSimulationTime - lastSimulationTime);
+	const double vitesseGeneratriceT = calculVitesseGeneratrice(
+		windSpeed,
+		rayon,
+		coupleVisqueuxGeneratrice,
+		coupleResGeneratrice,
+		timeFactor,
+		k
+	);
+	const double vitesseGeneratriceMax = calculVitesseGeneratrice(
+		windSpeed,
+		rayon,
+		coupleVisqueuxGeneratrice,
+		coupleResGeneratrice,
+		1,
+		k
+	) * abs(sin(getAttackAngle()));
+
+
+	
+	double vitesseT = vitesseGeneratriceT / k;
+	double vitesseMax = vitesseGeneratriceMax / k;
+
+	if (simulationNum > 1)
+	{
+		// vent plus fort
+		if (windSpeed > lastWindSpeed || vitesseMax >= currentSpeed)
+		{
+			currentSpeed = min(currentSpeed + ((currentSpeed + 1) * 0.25 * dt), vitesseMax);
+		}
+		else if(windSpeed < lastWindSpeed || vitesseMax < currentSpeed)
+		{
+			currentSpeed = max(currentSpeed - (currentSpeed * 0.25 * dt), 0.0);
+		}
+	}
+	else
+	{
+		currentSpeed = vitesseT;
+	}
+	
+	const double degree = currentSpeed * 360 / 60.0 * dt;
+
+	getAnim().setCurrentAngle(fmod(getAnim().getCurrentAngle() + degree, 360.0));
+}
+
 
 void Pales::updateSpeed(double windSpeed, double attackAngle)
 {
-	if (attackAngle > 0)
-	{
-		const double rayonPale = 11;
-		const double rho = 1.225;
-		const double inertiePale = 133000;
-
-		double masseAirApplique = rho * M_PI * pow(rayonPale, 2) * windSpeed * sin(attackAngle);
-		double energieCinetiqueAir = masseAirApplique * pow(windSpeed, 2);
-			
-		double radians = sqrt(energieCinetiqueAir / inertiePale);
-		double degrees = radians * 180 / M_PI;
-		double tourmin = degrees * 60 / 360;
-		printf("masseAirApplique = %f\nenergieCinetique = %f\n radians = %f\n tour/min = %f\n",
-			masseAirApplique, energieCinetiqueAir, radians, tourmin);
-		getAnim().setAngle(degrees);
-	}
+	this->simulationNum++;
+	this->lastSimulationTime = this->totalSimulationTime;
+	this->lastSpeed = this->currentSpeed;
+	this->lastWindSpeed = this->windSpeed;
+	this->windSpeed = windSpeed;
+	this->attackAngle = attackAngle;
 }
 
 Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 {
+	stats = new EolienneStats(this);
 	BasicForm* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
 	pales = new Pales(Point(-2.8, -0.3, 0));
+	//Fleche* test = new Fleche(Point(0, 0, 0));
+	//pales->addChild(test);
 	nacelle->addChild(pales);
 	addChild(nacelle);
 }
@@ -241,70 +341,51 @@ Skybox::Skybox(Point pos) : Skybox3D(pos)
 {
 }
 
-AirHokey::AirHokey(Point pos, Color color)
+EolienneStats::EolienneStats(Eolienne * eolienne)
 {
-	position = pos;
-	col = color;
-	setAnim(Animation(90, 0, Vector(1, 0, 0)));
-	x = new Cube(Point(-10, 0, 0), 1, 20, 1, WHITE);
-	maxX = new Cube(Point(10, 0, 0), 1, 20, 1, WHITE);
-	y = new Cube(Point(0, -10, 0), 20, 1, 1, WHITE);
-	maxY = new Cube(Point(0, 10, 0), 20, 1, 1, WHITE);
-	palet = new Cylinder(Point(), 0.2, 0.5, WHITE);
-	palet->setAnim(Animation(180, 0, Vector(1, 0, 0)));
-	direction = Vector(1, 0.5, 0);
-	velocite = Vector(25, 25, 0);
-	addChild(x);
-	addChild(maxX);
-	addChild(y);
-	addChild(maxY);
-	addChild(palet);
+	parent = eolienne;
+	col = WHITE;
 }
 
-void AirHokey::renderSpecific()
+void EolienneStats::renderSpecific()
 {
-}
-
-Vector calcul_rebond(Vector vi, Vector normal)
-{
-	return vi + (vi * normal * normal * -2);
-}
-
-int collision(float rayon, float x, float maxX, float y, float maxY, Point position)
-{
-	int colX = position.x + rayon;
-	if (colX >= maxX) return 3;
-	if (colX <= x) return 1;
-	int colY = position.y + rayon;
-	if (colY >= maxY) return 4;
-	if (colY <= y) return 2;
-	return 0;
-}
+	Pales* pales = parent->getPales(); 
+	const Vector position(3.6,-4.3,0);
 
 
-void AirHokey::update(float dt)
-{
-	palet->setPosition(palet->getPosition() + (direction * velocite * dt));
-	int bordCollision = collision(0.5, -10, 10, -10, 10, palet->getPosition());
-	if (bordCollision != 0)
+	const float a = 0.5;
+	const float b = 0.2;
+
+	glDepthFunc(GL_ALWAYS);
+	glDisable(GL_LIGHTING);
+
+	glTranslated(position.x, position.y, position.z);
+	glRotated(-45,1,0 , 0);
+
+	glColor4f(0, pales->getWindSpeed() * 0.04 , 1- pales->getWindSpeed() * 0.04, 0.7);
+	glBegin(GL_TRIANGLE_STRIP);
 	{
-		//printf("collision %d\n", bordCollision);
-		Vector normale;
-		switch (bordCollision)
-		{
-		case 1:
-			normale = Vector(1, 0, 0);
-			break;
-		case 2:
-			normale = Vector(0, 1, 0);
-			break;
-		case 3:
-			normale = Vector(-1, 0, 0);
-			break;
-		case 4:
-			normale = Vector(0, -1, 0);
-			break;
-		}
-		direction = calcul_rebond(direction, normale);
+		// vitesse vent
+		glVertex3f(-a, 0, 0);
+		glVertex3f(-a, pales->getWindSpeed() * 1.5/40, 0);
+		glVertex3f(-b, 0, 0);
+		glVertex3f(-b, pales->getWindSpeed() * 1.5/40, 0);
 	}
+	glEnd();
+
+	glColor4f(1, 1 - pales->getCurrentSpeed() * 0.003, 0, 0.7);
+	glBegin(GL_TRIANGLE_STRIP);
+	{
+		// vitesse turbine
+		glVertex3f(a, 0, 0);
+		glVertex3f(a, pales->getCurrentSpeed() * 1.5/327, 0);
+		glVertex3f(b, 0, 0);
+		glVertex3f(b, pales->getCurrentSpeed() * 1.5/327, 0);
+	}
+	glEnd();
+	glRotated(45, 1, 0, 0);
+	glTranslated(-position.x, -position.y, -position.z);
+
+	glEnable(GL_LIGHTING);
+	glDepthFunc(GL_LESS);
 }

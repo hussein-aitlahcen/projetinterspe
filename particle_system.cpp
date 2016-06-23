@@ -17,12 +17,13 @@ void Particle::update(float dt)
 	velocity = velocity * acceleration;
 	position = position + (velocity * dt);
 	lifeSpan -= dt;
+	alpha = lifeSpan / initialLifespan;
 }
 
 WindParticle::WindParticle(Vector velocity, Vector accel, Point initialPosition) 
 	: Particle(WIND_PARTICLE_LIFE, velocity, accel, initialPosition, WHITE)
 {
-	alpha = 0.8;
+	alpha = 1;
 }
 
 void WindParticle::renderSpecific()
@@ -46,18 +47,22 @@ WindSystem::WindSystem(Vector direction, float speed, Point position, Color colo
 	}
 }
 
+void WindSystem::renderSpecific()
+{
+	ParticleSystem::renderSpecific();
+}
+
 void WindSystem::respawnParticle(WindParticle* particle)
 {
 	const float maxPerLine = sqrt(WIND_MAX_PARTICLE);
 	
-	const float minX = -WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
-	const float maxX = WIND_GRILL_HALF_WIDTH * cos(getAngleFactor());
+	const float minX = 0;
+	const float maxX = 0;
 	const float dX = maxX - minX;
 	const float xStep = dX / maxPerLine;
 
-
-	const float minZ = -WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
-	const float maxZ =  WIND_GRILL_HALF_WIDTH * sin(getAngleFactor());
+	const float minZ = -WIND_GRILL_HALF_WIDTH;
+	const float maxZ = WIND_GRILL_HALF_WIDTH;
 	const float dZ = maxZ - minZ;
 	const float zStep = dZ / maxPerLine;
 
@@ -66,11 +71,10 @@ void WindSystem::respawnParticle(WindParticle* particle)
 	const float dY = maxY - minY;
 	const float yStep = dY / maxPerLine;
 
-	printf("minX = %f \n maxX = %f \n dX = %f \n xStep = %f \n cos(getAngleFactor()) = %f\n", minX, maxX, dX, xStep,cos(getAngleFactor()));
 	const float currentLine = currentParticle / maxPerLine;
 	const float currentIndex = fmod(currentParticle, maxPerLine);
 
-	float currentX = minX + xStep * currentIndex;
+	const float currentX = minX + xStep * currentIndex;
 	const float currentY = minY + yStep * currentLine;
 	const float currentZ = minZ + zStep * currentIndex;
 
@@ -88,6 +92,6 @@ WindParticle* WindSystem::generateParticle()
 	return new WindParticle(
 		direction,
 		Vector(1, 1, 1),
-		Point(0, 0, 0)
+		Point()
 	);
 }

@@ -18,6 +18,9 @@
 
 using namespace std;
 
+class Eolienne;
+class EolienneStats;
+
 class Color
 {
 public:
@@ -130,13 +133,15 @@ public:
 	void renderSpecific(); 
 };
 
-class Cylinder : public BasicForm
+class Fleche : public BasicForm
 {
 private:
-	double radius;
+	double width;
 	double height;
+	double depth;
+
 public:
-	Cylinder(Point position = Point(), double h = 1, double d = 1.0, Color cl = Color());
+	Fleche(Point position = Point(), double width = 10, double height = 10, double depth = 10, Color cl = Color());
 	void renderSpecific();
 };
 
@@ -147,53 +152,6 @@ private:
 	SkyboxTextures* texturesSkybox;
 	Texture* textureSol;
 	Point position;
-
-
-	GLfloat skyboxVertices[108] = {
-		// Positions          
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f
-	};
-
 
 public:
 	Skybox3D(Point position = Point());
@@ -212,40 +170,53 @@ public:
 
 class Pales : public Model3D
 {
+private:
+	int simulationNum;
+	double lastSimulationTime;
+	double totalSimulationTime;
+	double lastSpeed;
+	double currentSpeed;
+	double lastWindSpeed;
+	double windSpeed;
+	double attackAngle;
 public:
 	Pales(Point pos = Point(), Color cl = WHITE);
 	void updateSpeed(double windSpeed, double attackAngle);
+	void update(float dt);
+	int getSimulationNum() { return simulationNum; }
+	double getCurrentSpeed() { return currentSpeed; }
+	double getWindSpeed() { return windSpeed; }
+	double getAttackAngle() { 
+		return attackAngle; 
+	}
 };
 
 class Eolienne : public Model3D
 {
 private:
 	Pales* pales;
+	EolienneStats* stats;
 public:
 	Eolienne(Point pos = Point(), Color cl = WHITE);
 	Pales* getPales() { return pales; }
+	EolienneStats* getStats() { return stats; }
 };
+
+class EolienneStats : public BasicForm
+{
+private:
+	Eolienne* parent;
+public:
+	EolienneStats(Eolienne* eolienne);
+	void renderSpecific();
+};
+
+
 
 class Skybox : public Skybox3D
 {
 public:
 	Skybox(Point pos = Point());
-};
-
-class AirHokey : public BasicForm
-{
-private:
-	Vector direction;
-	Vector velocite;
-	Cylinder* palet;
-	Cube* x;
-	Cube* maxX;
-	Cube* y;
-	Cube* maxY;
-public:
-	AirHokey(Point pos = Point(), Color cl = WHITE);
-	void renderSpecific();
-	void update(float dt);
 };
 
 

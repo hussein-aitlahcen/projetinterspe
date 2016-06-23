@@ -17,6 +17,7 @@ public:
 	const Vector getRotVect() { return rot_vect; }
 	void setRotVect(Vector vect) { rot_vect = vect; }
 	const double getCurrentAngle() { return currentAngle; }
+	void setCurrentAngle(double angle) { currentAngle = angle; }
 	void update(float dt);
 };
 
