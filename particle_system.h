@@ -9,9 +9,9 @@
 #define PARTICLE_GENERATION_INTERVAL 0.1
 
 // wind system spec
-#define WIND_PARTICLE_LIFE 1 // in second
-#define WIND_GRILL_HALF_WIDTH 14 // 14*14 grill
-#define WIND_GRILL_HALF_HEIGHT WIND_GRILL_HALF_WIDTH
+#define WIND_PARTICLE_LIFE 1.5// in second
+#define WIND_GRILL_HALF_WIDTH 200 // 14*14 grill
+#define WIND_GRILL_HALF_HEIGHT 20
 #define WIND_MAX_PARTICLE WIND_PARTICLE_LIFE * 100
 
 class Particle : public BasicForm

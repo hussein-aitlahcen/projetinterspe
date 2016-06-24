@@ -67,65 +67,12 @@ void Cube::renderSpecific()
 	glEnd();
 }
 
-
-Fleche::Fleche(Point c, double w, double h, double d, Color color)
-{
-	position = c;
-	width = w;
-	height = h;
-	depth = d;
-	Form::col = color;
-}
-
-void Fleche::renderSpecific()
-{
-	const float half_w = width / 2;
-	const float half_h = height / 2;
-	const float half_d = depth / 2;
-	glBegin(GL_QUADS);
-	{
-		// Avant
-		glVertex3f(-half_w, -half_h, half_d);
-		glVertex3f(half_w, -half_h, half_d);
-		glVertex3f(half_w, half_h, half_d);
-		glVertex3f(-half_w, half_h, half_d);
-		// Arrière
-		glVertex3f(-half_w, -half_h, -half_d);
-		glVertex3f(half_w, -half_h, -half_d);
-		glVertex3f(half_w, half_h, -half_d);
-		glVertex3f(-half_w, half_h, -half_d);
-		// Droite
-		glVertex3f(half_w, -half_h, half_d);
-		glVertex3f(half_w, -half_h, -half_d);
-		glVertex3f(half_w, half_h, -half_d);
-		glVertex3f(half_w, half_h, half_d);
-		// Gauche
-		glVertex3f(-half_w, -half_h, half_d);
-		glVertex3f(-half_w, -half_h, -half_d);
-		glVertex3f(-half_w, half_h, -half_d);
-		glVertex3f(-half_w, half_h, half_d);
-		// Haut
-		glVertex3f(-half_w, half_h, half_d);
-		glVertex3f(half_w, half_h, half_d);
-		glVertex3f(half_w, half_h, -half_d);
-		glVertex3f(-half_w, half_h, -half_d);
-		// Bas
-		glVertex3f(-half_w, -half_h, half_d);
-		glVertex3f(half_w, -half_h, half_d);
-		glVertex3f(half_w, -half_h, -half_d);
-		glVertex3f(-half_w, -half_h, -half_d);
-	}
-	glEnd();
-}
-
-
-
 Skybox3D::Skybox3D(Point c)
 {
 	position = c;
 
+	//Chargement des textures de la skybox
 	texturesSkybox = singleton<SkyboxManager>().loadData("const_skybox");
-	//textureSol = singleton<TextureManager>().loadData("model/grass2.jpg");
 }
 
 void Skybox3D::renderSpecific()
@@ -133,12 +80,12 @@ void Skybox3D::renderSpecific()
 
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_CUBE_MAP);
-	//glDisable(GL_DEPTH_TEST);
-	//glDepthMask(GL_FALSE);
-	// Avant
 
+	//Taille du cube
 	float t = 200;
+	//Hauteur du sol dans le cube
 	float h = 4;
+	//On monte le sol
 	glTranslatef(0, t/h, 0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texturesSkybox->getTextureID());
@@ -188,20 +135,6 @@ void Skybox3D::renderSpecific()
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	glDisable(GL_TEXTURE_CUBE_MAP);
-
-	/*glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textureSol->getTextureID());
-
-
-	glBegin(GL_TRIANGLE_STRIP);			// Y Négatif	
-	glTexCoord3f(-t , -t, -t); glVertex3f(-t, -t / 3.5, -t);
-	glTexCoord3f(-t, -t, t); glVertex3f(-t, -t / 3.5, t);
-	glTexCoord3f(t, -t, -t); glVertex3f(t, -t / 3.5, -t);
-	glTexCoord3f(t, -t, t); glVertex3f(t, -t / 3.5, t);
-	glEnd();
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);*/
 }
 
 
@@ -331,9 +264,9 @@ Eolienne::Eolienne(Point pos, Color cl) : Model3D("model/Mat.json", pos, cl)
 	stats = new EolienneStats(this);
 	BasicForm* nacelle = new Model3D("model/Tete.json", Point(0, 15, 0));
 	pales = new Pales(Point(-2.8, -0.3, 0));
-	//Fleche* test = new Fleche(Point(0, 0, 0));
-	//pales->addChild(test);
+	//Nacelle a pour enfant les pales, elles dependent de la nacelle
 	nacelle->addChild(pales);
+	//Les pales dépendent du mat
 	addChild(nacelle);
 }
 
@@ -356,7 +289,9 @@ void EolienneStats::renderSpecific()
 	const float a = 0.5;
 	const float b = 0.2;
 
+	//Ne depend pas de la profondeur pour etre toujours à l'avant
 	glDepthFunc(GL_ALWAYS);
+	//Ne depend pas de la lumiere ambiante
 	glDisable(GL_LIGHTING);
 
 	glTranslated(position.x, position.y, position.z);

@@ -46,8 +46,6 @@ Vector scene_angle = Vector(0, 0, 0);
 Vector scene_translation = Vector(0, 0, 0);
 Vector scene_zoom = Vector(0.07, 0.07, 0.07);
 
-Shader* test;
-
 
 /***************************************************************************/
 /* Functions implementations                                               */
@@ -146,6 +144,7 @@ bool initGL()
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	//Vecteurs pour la lumière
 	float lightSpecularColor[] = { 1, 1, 1 };
 	float lightDiffuseColor[] = { 1, 1, 1 }; 
 	float lightAmbient[] = { 0.1, 0.1, 0.1 };
@@ -179,6 +178,9 @@ void update(Drawable* formlist[MAX_FORMS_NUMBER], double dt)
 	}
 }
 
+/*
+ * Permet de dézoomer progressivement
+ */
 void handleZoom(bool *zooming, float *zoomValue, float *zoomStep)
 {
 	if (*zooming)
@@ -219,32 +221,15 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 
 
 
+	/*Tourner, déplacer, dézoomer (changement sur l'objet) en fonction des données mises à jour par la souris
+	 */
 	glPushMatrix();
 	glTranslated(scene_translation.x, scene_translation.y, scene_translation.z);
 	glRotated(scene_angle.x, 1, 0, 0);
 	glRotated(scene_angle.y, 0, 1, 0);
 	glRotated(scene_angle.z, 0, 0, 1);
 	glScaled(scene_zoom.x, scene_zoom.y, scene_zoom.z);
-	glUseProgram(test->getProgramID());
-	// X, Y and Z axis
-	glPushMatrix(); // Preserve the camera viewing point for further forms
-	// Render the coordinates system
-	glBegin(GL_LINES);
-	{
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glVertex3i(0, 0, 0);
-		glVertex3i(1, 0, 0);
-		glColor3f(0.0f, 1.0f, 0.0f);
-		glVertex3i(0, 0, 0);
-		glVertex3i(0, 1, 0);
-		glColor3f(0.0f, 0.0f, 1.0f);
-		glVertex3i(0, 0, 0);
-		glVertex3i(0, 0, 1);
-	}
-	glEnd();
-	glPopMatrix();
 
-	// Render the list of forms
 	unsigned short i = 0; 
 	while (formlist[i] != NULL)
 	{
@@ -253,8 +238,8 @@ const void render(Drawable* formlist[MAX_FORMS_NUMBER], const Point &cam_pos, co
 	}
 	glPopMatrix();
 
+	//Affiche les stats de l'eolienne
 	eolienne->getStats()->render();
-
 }
 
 void close(SDL_Window** window)
@@ -310,6 +295,7 @@ int wmain(int argc, char* args[])
 		WindSystem* windSystem = new WindSystem(windDirection, initialWindSpeed, Point(-20, 22, 0), BLUE);
 		Eolienne* eolienne = new Eolienne(Point(0, 7, 0));
 		Skybox* skybox = new Skybox(Point(1, 0, 0));
+		//Mise à jour de la vitesse des pales
 		eolienne->getPales()->updateSpeed(initialWindSpeed, windSystem->getAngleFactor());
 
 		// The forms to render
@@ -323,8 +309,6 @@ int wmain(int argc, char* args[])
 		forms_list[0] = skybox;
 		forms_list[1] = eolienne;
 		forms_list[2] = windSystem;
-
-		test = singleton<ShaderManager>().loadData("model/particle");
 
 
 		// Get first "current time"
@@ -349,7 +333,7 @@ int wmain(int argc, char* args[])
 						dragging = true;
 					else if (event.button.button == SDL_BUTTON_MIDDLE)
 					{
-
+						//Recentre la caméra
 						camera_target.x = scene_translation.x;
 						camera_target.y = scene_translation.y;
 						camera_target.z = scene_translation.z;
@@ -403,6 +387,7 @@ int wmain(int argc, char* args[])
 						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_m:
+						//Change la direction du vent vers la droite
 						windSystem->setDirection(
 							Vector(
 								windSystem->getDirection().x,
@@ -413,7 +398,7 @@ int wmain(int argc, char* args[])
 						eolienne->getPales()->updateSpeed(windSystem->getSpeed(), windSystem->getAngleFactor());
 						break;
 					case SDLK_l:
-						printf("%f  \n", windSystem->getAngle());
+						//Change la direction du vent vers la gauche
 						windSystem->setDirection(
 							Vector(
 								windSystem->getDirection().x,
@@ -432,6 +417,7 @@ int wmain(int argc, char* args[])
 				{
 					if (dragging)
 					{
+						//Tourne la caméra en fonction du déplacement de la souris lorsqu'on clique
 						if (event.motion.xrel < 0)
 							scene_angle.y += event.motion.xrel * distance * cos(event.motion.xrel*M_PI / 180) / 20;
 						else

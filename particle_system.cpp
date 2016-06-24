@@ -12,11 +12,14 @@ Particle::Particle(float life, Vector velo, Vector accel, Point pos, Color color
 	initialPosition = pos;
 }
 
+/* Update pour chaque particule
+*/
 void Particle::update(float dt)
 {
 	velocity = velocity * acceleration;
 	position = position + (velocity * dt);
 	lifeSpan -= dt;
+	//Les particules sont plus en plus en transparentes avec le temps
 	alpha = lifeSpan / initialLifespan;
 }
 

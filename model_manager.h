@@ -33,9 +33,12 @@ public:
 	Model(string fileName) 
 	{
 		name = fileName;
+		//On load le modele
 		fstream fstream(fileName, ios::in);
 		picojson::value model;
 		picojson::parse(model, fstream);
+		
+		//On parse les données récupérées et on les charge dans un buffer pour pouvoir les loader
 		for (auto vertice : model.get("vertices").get(0).get("values").get<picojson::array>())
 		{
 			vertices.push_back(vertice.get<double>());
@@ -94,7 +97,7 @@ private:
 	unsigned char* image;
 	int channels;
 
-	GLenum cube_map_target[6] = 
+	GLenum cube_face[6] = 
 	{
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -104,15 +107,12 @@ private:
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Z
 	};
 
+/*Permet de charger des textures et les appliquer a un cubemap
+*/
 public:
-	// +X (right)
-	// -X (left)
-	// +Y (top)
-	// -Y (bottom)
-	// +Z (front) 
-	// -Z (back)
 	SkyboxTextures(string name)
 	{
+		//On load chaque image
 		faces.push_back("model/right.tga");
 		faces.push_back("model/left.tga");
 		faces.push_back("model/bottom.tga");
@@ -124,13 +124,15 @@ public:
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 		for (GLuint i = 0; i < faces.size(); i++)
 		{
-
+			//On load l'image pour chaque face et on la lie à la bonne face avec le cubemap
 			image = SOIL_load_image(faces[i], &width, &height, &channels, SOIL_LOAD_RGB);
-			glTexImage2D(cube_map_target[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+			glTexImage2D(cube_face[i], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 			SOIL_free_image_data(image);
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		//Les textures sont étirées jusqu'au bord de chaque face
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -144,6 +146,8 @@ public:
 	}
 };
 
+/* Permet de charger une texture
+*/
 class Texture
 {
 private:

@@ -133,18 +133,6 @@ public:
 	void renderSpecific(); 
 };
 
-class Fleche : public BasicForm
-{
-private:
-	double width;
-	double height;
-	double depth;
-
-public:
-	Fleche(Point position = Point(), double width = 10, double height = 10, double depth = 10, Color cl = Color());
-	void renderSpecific();
-};
-
 class Skybox3D : public BasicForm
 {
 private:
